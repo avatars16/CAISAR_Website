@@ -6,6 +6,7 @@ const {
     insertNewRow,
 } = require("../database/db_interaction");
 const slugify = require("slugify");
+const ApiError = require("../error/data-errors");
 
 async function createUser(userParam) {
     const hashedPassword = await bcrypt.hash(userParam.password, 10);
@@ -19,10 +20,28 @@ async function createUser(userParam) {
             userParam.firstName + userParam.middleName + userParam.lastName
         ),
     };
-    if (userParam.role) newUser["websiteRole"] = userParam.role;
+    if (userParam.websiteRole) newUser["websiteRole"] = userParam.role;
     if (userParam.middleName) newUser["middleName"] = userParam.middleName;
     if (userParam.birthday) newUser["birthday"] = userParam.birthday;
     return newUser;
+}
+
+async function saveUser(userParam) {
+    data = await insertNewRow("users", userParam);
+    return data;
+}
+async function updateUser(user, currentPassword) {
+    let sql = `UPDATE users SET ? WHERE email = "${user.email}"`;
+    if (user.password != "")
+        user.password = await bcrypt.hash(user.password, 10);
+    else delete user.password;
+    data = await db_generic.dbQuery(sql, user);
+    return data;
+}
+
+async function deleteUser(user) {
+    let sql = `DELETE FROM users WHERE email = "${user.email}"`;
+    await db_generic.dbGetRows(sql);
 }
 
 async function createSlug(fullName) {
@@ -31,7 +50,7 @@ async function createSlug(fullName) {
     if (data == null) return slugName;
     var i = 0;
     newSlugName = slugify(fullName + i, { lower: true, strict: true });
-    while (slugName == newSlugName) {
+    while (await getUser({ slugURL: newSlugName })) {
         i++;
         newSlugName = slugify(fullName + i, { lower: true, strict: true });
     }
@@ -39,11 +58,19 @@ async function createSlug(fullName) {
 }
 
 async function checkIfUserExists(inputEmail) {
-    var data = await getUser({ email: inputEmail });
+    var data = await getUserByMail(inputEmail);
     if (data == null) {
         return false;
     }
     return true;
+}
+
+async function getUserBySlug(userSlug) {
+    return await getUser({ slugURL: userSlug });
+}
+
+async function getUserByMail(inputEmail) {
+    return await getUser({ email: inputEmail });
 }
 
 async function getUser(jsonQueryObject) {
@@ -55,6 +82,11 @@ async function getUser(jsonQueryObject) {
 }
 module.exports = {
     createUser,
+    saveUser,
     checkIfUserExists,
     getUser,
+    getUserByMail,
+    getUserBySlug,
+    updateUser,
+    deleteUser,
 };

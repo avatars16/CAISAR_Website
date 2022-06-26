@@ -27,7 +27,7 @@ function initiliaze(passport) {
             console.log("user already exists");
             return done(null, false, { message: "user already exists" });
         }
-        if (await insertNewRow("users", newUser)) {
+        if (userMiddleware.saveUser(newUser)) {
             var reqNewUser = await userMiddleware.getUser({ email: userEmail });
             return done(null, reqNewUser);
         }

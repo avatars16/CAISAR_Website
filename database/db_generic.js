@@ -20,6 +20,7 @@ function getConn() {
 }
 
 async function dbQuery(sql, param) {
+    console.log("dbQuery sql: " + sql + "params" + param);
     var db = getConn();
     var data = new Promise((resolve, reject) => {
         db.query(sql, param, (err, result) => {

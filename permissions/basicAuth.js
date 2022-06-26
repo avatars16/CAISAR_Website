@@ -1,20 +1,26 @@
+const ApiError = require("../error/data-errors");
+
 function authUser(req, res, next) {
     if (req.isAuthenticated()) return next();
-    return res.status(403).send("You need to sign in");
+    next(ApiError.unautharized("You need to be signed in"));
+    return;
 }
 
 function notAuthUser(req, res, next) {
-    if (req.isAuthenticated())
-        return res
-            .status(403)
-            .send("You can not acces this page while signed in");
+    if (req.isAuthenticated()) {
+        next(
+            ApiError.unautharized("You can not acces this page while signed in")
+        );
+        return;
+    }
     return next();
 }
 
 function authRole(role) {
     return (req, res, next) => {
         if (req.user.websiteRole !== role) {
-            return res.status(401).send("Not allowed");
+            next(ApiError.forbidden("You need to be signed in"));
+            return;
         }
         next();
     };

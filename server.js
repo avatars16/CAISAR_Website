@@ -10,6 +10,7 @@ const session = require("express-session");
 const methodOverride = require("method-override");
 
 const passport = require("passport");
+const apiErrorHandler = require("./error/error-handler");
 
 const initiliazePassport = require("./passport-config");
 initiliazePassport(passport);
@@ -34,11 +35,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const lsRouter = require("./routes/ls")(passport);
+const userRouter = require("./routes/users")(passport);
 const databaseRouter = require("./routes/database");
 const indexRouter = require("./routes/index");
 
 app.use("/db", databaseRouter);
 app.use("/ls", lsRouter);
+app.use("/users", userRouter);
 app.use("/", indexRouter);
+
+app.use(apiErrorHandler);
 
 app.listen(3000);
