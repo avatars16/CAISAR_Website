@@ -13,7 +13,7 @@ function notAuthUser(req, res, next) {
 
 function authRole(role) {
     return (req, res, next) => {
-        if (req.user.role !== role) {
+        if (req.user.websiteRole !== role) {
             return res.status(401).send("Not allowed");
         }
         next();

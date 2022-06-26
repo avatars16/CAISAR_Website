@@ -2,12 +2,24 @@
 <h1>Register</h1>
 <form action="/ls/register" method="post">
     <fieldset>
-        <label for="name">Name</label>
-        <input type="text" name="firstName" id="name">
+        <label for="firstName">First name</label>
+        <input type="text" name="firstName" id="firstName" value="user">
+    </fieldset>
+    <fieldset>
+        <label for="middleName">Middle name</label>
+        <input type="text" name="middleName" id="middleName">
+    </fieldset>
+    <fieldset>
+        <label for="lastName">Last name</label>
+        <input type="text" name="lastName" id="lastName" value="user">
+    </fieldset>
+    <fieldset>
+        <label for="birthday">Birthday</label>
+        <input type="date" name="birthday" id="birthday">
     </fieldset>
     <fieldset>
         <label for="email">Email</label>
-        <input type="email" name="email" id="email" required>
+        <input type="email" name="email" id="email" required value="user@user.com">
     </fieldset>
     <fieldset>
         <label for="role">Role</label>
@@ -15,7 +27,7 @@
     </fieldset>
     <fieldset>
         <label for="password">Password</label>
-        <input type="password" name="password" id="password" required>
+        <input type="password" name="password" id="password" value="user" required>
     </fieldset>
     <button type="submit">Register</button>
 </form>

@@ -1,6 +1,6 @@
 const express = require("express");
-const createUserTable = require("../models/db_generate_tables");
-const db = require("../models/db_generic");
+const createUserTable = require("../database/db_generate_tables");
+const db = require("../database/db_generic");
 const router = express.Router();
 
 router.get("/createUserTable", (req, res) => {

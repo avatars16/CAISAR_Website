@@ -1,7 +1,7 @@
 const LocalStrategy = require("passport-local").Strategy;
-const userMiddleware = require("./middleware/users");
+const userMiddleware = require("./models/users");
 const bcrypt = require("bcrypt");
-const { insertNewRow } = require("./models/db_interaction");
+const { insertNewRow } = require("./database/db_interaction");
 
 function initiliaze(passport) {
     const loginUser = async (userEmail, password, done) => {
@@ -22,13 +22,7 @@ function initiliaze(passport) {
     };
 
     const registerUser = async (req, userEmail, password, done) => {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        let newUser = {
-            createdAt: new Date(),
-            firstName: req.body.firstName,
-            email: userEmail,
-            password: hashedPassword,
-        };
+        let newUser = await userMiddleware.createUser(req.body);
         if (await userMiddleware.checkIfUserExists(newUser.email)) {
             console.log("user already exists");
             return done(null, false, { message: "user already exists" });
