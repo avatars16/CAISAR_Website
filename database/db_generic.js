@@ -36,4 +36,18 @@ function dbQuery(sql, placeholders) {
     });
 }
 
-module.exports = { dbQuery, getConn };
+function dbSimpleQuery(sql) {
+    console.log("dbSimpleQuery sql: " + sql);
+    return new Promise((resolve, reject) => {
+        var db = getConn();
+        db.query(sql, (err, result, fields) => {
+            if (err) {
+                return reject(ApiError.internal("Invalid database query"));
+            }
+            return resolve(result);
+        });
+        db.end();
+    });
+}
+
+module.exports = { dbQuery, dbSimpleQuery, getConn };

@@ -8,15 +8,35 @@ const {
     getUserBySlug,
     updateUser,
     deleteUser,
+    getAllUsers,
+    searchUser,
 } = require("../models/users-api");
 const {
     canViewSpecificUser,
     hasRole,
 } = require("../permissions/users-permissions");
+const {
+    getAllRows,
+    getDataFromMultipleTables,
+} = require("../database/db_interaction");
+const { getCommitteeByName } = require("../models/committees-api");
 
 module.exports = function (passport) {
-    router.route("/").get(authUser, authRole(ROLE.ADMIN), (req, res) => {
-        res.send("you are an admit yeay");
+    router.route("/").get(authUser, async (req, res) => {
+        let allUsers = await getAllUsers();
+        res.render("users/allUsers", { users: allUsers });
+    });
+
+    router.post("/search", async (req, res, next) => {
+        let payload = req.body.payload;
+        await searchUser(payload)
+            .then((result) => {
+                console.log(result);
+                res.json({ payload: result });
+            })
+            .catch((err) => {
+                next(err);
+            });
     });
 
     router
@@ -59,8 +79,21 @@ module.exports = function (passport) {
 
     router.route("/:userSlug").get(authUser, async (req, res, next) => {
         if (canViewSpecificUser(req.user, req.params.userSlug)) {
-            let currentUser = await getUserBySlug(req.params.userSlug);
-            res.render("users/userProfile", { user: currentUser });
+            let committees = await getDataFromMultipleTables(
+                "users",
+                "committees",
+                "userId",
+                "userId",
+                { "users.userId": req.user.userId }
+            );
+            let list = [];
+            for (let committee of committees) {
+                list.push(await getCommitteeByName(committee.committeeName));
+            }
+            res.render("users/userProfile", {
+                user: req.user,
+                committees: list,
+            });
             return;
         }
         next(ApiError.forbidden("You don't have acces to this page"));

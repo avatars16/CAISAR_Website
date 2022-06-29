@@ -2,15 +2,18 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const db_generic = require("../database/db_generic");
 const {
-    createSearchQuery,
     updateRow,
     addNewRow,
-    getRow,
     deleteRow,
+    getSpecificRows,
+    getAllRows,
+    searchInColumns,
 } = require("../database/db_interaction");
 const slugify = require("slugify");
 const ApiError = require("../error/data-errors");
 const apiErrorHandler = require("../error/error-handler");
+const data = require("./data");
+const { search } = require("../routes");
 
 async function createUser(userParam) {
     const hashedPassword = await bcrypt.hash(userParam.password, 10);
@@ -31,7 +34,7 @@ async function createUser(userParam) {
 }
 
 async function saveUser(userParam) {
-    data = await addNewRow("users", userParam);
+    let data = await addNewRow("users", userParam);
     return data;
 }
 function updateUser(user, userId, oldEmail) {
@@ -86,14 +89,36 @@ async function getUserByMail(inputEmail) {
     return await getUser({ email: inputEmail });
 }
 
+async function getAllUsers() {
+    let data = await getAllRows("users", "*");
+    if (data instanceof ApiError) {
+        console.log(data);
+        return;
+    }
+    return data;
+}
+
 async function getUser(jsonQueryObject) {
     //for example to get user by email: getUser({ email: userEmail})
-    data = await getRow("users", "*", jsonQueryObject);
+    let data = await getSpecificRows("users", "*", jsonQueryObject);
     if (data instanceof ApiError) {
         console.log(data);
         return;
     }
     return data[0];
+}
+
+async function searchUser(searchItem) {
+    return new Promise(async (resolve, reject) => {
+        let data = await searchInColumns(
+            "users",
+            "*",
+            searchItem + "% ",
+            "lastName"
+        );
+        if (data instanceof ApiError) return reject(data);
+        return resolve(data);
+    });
 }
 module.exports = {
     createUser,
@@ -104,4 +129,6 @@ module.exports = {
     getUserBySlug,
     updateUser,
     deleteUser,
+    getAllUsers,
+    searchUser,
 };

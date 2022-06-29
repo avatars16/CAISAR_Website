@@ -1,0 +1,50 @@
+<br>
+<h1>Edit members: <%- committee.committeeName%></h1>
+<form action="/committees/<%=committee.committeeSlug %>/edit?_method=PUT" method="post">
+    <%  let notShowForMembers = ["committeeId","userId","committeeSlug", "startDate","endDate"]
+        for (let member of committeeMembers) {
+                if(member.userId){
+                %>
+                <%=member.firstName%>
+                <br>
+                <%
+                    for(let prop in member){
+                        if(!notShowForMembers.includes(String(prop))){
+                        %>
+                        <fieldset>
+                            <label for= <%= prop %> > 
+                                <%
+                                var rowName = prop.replace(/([A-Z])/g, " $1");
+                                var finalRowName = rowName.charAt(0).toLowerCase() + rowName.slice(1)
+                                %>
+                                <%= finalRowName%>
+                            </label>
+                            <input type="text" name= <%= prop %> id= <%= prop %> value= <%-member[prop] %>>
+                        </fieldset>
+                        <fieldset>
+                            <label for= "startDate" > startDate </label>
+                            <input type="date" name= "startDate" id= "startDate" value = <%= member.startDate%>>
+                        </fieldset>
+                        <fieldset>
+                            <label for= "endDate" > endDate </label>
+                            <input type="date" name= "endDate" id= "endDate" value = <%= member.startDate%>>
+                        </fieldset>
+    <% } } } } %> 
+
+    <fieldset>
+            <label for= "startDate" > startDate </label>
+            <input type="date" name= "startDate" id= "startDate" value = <%= committee.startDate%>>
+    </fieldset>
+    <fieldset>
+            <label for= "endDate" > endDate </label>
+            <input type="date" name= "endDate" id= "endDate" value = <%= committee.startDate%>>
+    </fieldset>
+    <button type="submit">Change</button>
+</form>
+<form action="/committees/<%=committee.committeeSlug %>/edit" method="post">
+    <label for="slugURL">Userslug</label>
+    <input type="slugURL" name="slugURL" id="slugURL">
+    <button type="submit">Add user to this committee</button>    
+</form>
+
+<br>

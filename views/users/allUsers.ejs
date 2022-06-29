@@ -1,0 +1,28 @@
+<br>
+<h1>All users</h1>
+
+<label for="search">Search:</label>
+<input type="search" name="search" id="search" onkeyup="sendData(this)">
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Value</th>
+    </tr>
+    <% 
+    let notShow = ["password","userId","createdAt", "websiteRole"]
+    for (user of users){
+        %>
+        <tr>
+            <% if(user.middleName){%>
+                <td><%= user.firstName + ' '+  user.middleName +' '+  user.lastName %></td>
+            <%} else {%> 
+                <td><%= user.firstName + ' '+  user.lastName %></td>
+            <%}%>
+            <td> <a href="/users/<%= user.slugURL %>"><%= user.slugURL %></a></td>
+        </tr>
+    <% }%> 
+</table>
+<br>
+<br>
+
+<!--<script src="js/searchengine.js"></script>-->

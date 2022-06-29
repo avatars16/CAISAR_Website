@@ -19,3 +19,22 @@
 <br>
 <a href="/users/<%= user.slugURL%>/edit">edit</a>
 <br>
+<h1>Committees</h1>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Value</th>
+    </tr>
+    <% 
+    let notShowForMembers = ["committeeId","userId"]
+    console.log("committee")
+    console.info(committees)
+    for (let member of committees) {
+        console.log("member")
+        console.info(member)
+        %>
+        <td><%= member.committeeName +'\t'%> </td>
+         <td><a href="/committees/<%= member.committeeSlug%>/view"><%=  member.committeeSlug%></a></td>
+    <% }%> 
+</table>
+<br>

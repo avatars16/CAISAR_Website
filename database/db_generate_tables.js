@@ -18,12 +18,13 @@ async function createUserTable(req, res) {
 
 async function createUserMembershipsTable(req, res) {
     let date = "startDate DATE DEFAULT CURRENT_DATE(), endDate DATE,";
-    let name = "membershipName VARCHAR(255) NOT NULL,";
+    let name =
+        "committeeName VARCHAR(255) NOT NULL, committeeSlug VARCHAR(255) NOT NULL,";
     let sql =
-        "CREATE TABLE userMemberships(membershipId int AUTO_INCREMENT, userId int NOT NULL," +
+        "CREATE TABLE committees(committeeId int AUTO_INCREMENT, userId int, memberRole VARCHAR(255) DEFAULT 'member'," +
         date +
         name +
-        "  PRIMARY KEY(membershipId), FOREIGN KEY (userId) REFERENCES users(id))";
+        "  PRIMARY KEY(committeeId), FOREIGN KEY (userId) REFERENCES users(userId))";
     db = getConn();
     db.query(sql, (err, result) => {
         if (err) throw err;
