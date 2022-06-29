@@ -3,10 +3,14 @@ const passport = require("passport");
 const db_generic = require("../database/db_generic");
 const {
     createSearchQuery,
-    insertNewRow,
+    updateRow,
+    addNewRow,
+    getRow,
+    deleteRow,
 } = require("../database/db_interaction");
 const slugify = require("slugify");
 const ApiError = require("../error/data-errors");
+const apiErrorHandler = require("../error/error-handler");
 
 async function createUser(userParam) {
     const hashedPassword = await bcrypt.hash(userParam.password, 10);
@@ -27,21 +31,30 @@ async function createUser(userParam) {
 }
 
 async function saveUser(userParam) {
-    data = await insertNewRow("users", userParam);
+    data = await addNewRow("users", userParam);
     return data;
 }
-async function updateUser(user, currentPassword) {
-    let sql = `UPDATE users SET ? WHERE email = "${user.email}"`;
-    if (user.password != "")
-        user.password = await bcrypt.hash(user.password, 10);
-    else delete user.password;
-    data = await db_generic.dbQuery(sql, user);
-    return data;
+function updateUser(user, userId, oldEmail) {
+    return new Promise(async (resolve, reject) => {
+        if (user.password != "")
+            user.password = await bcrypt.hash(user.password, 10);
+        else delete user.password;
+        if (oldEmail != user.email && (await checkIfUserExists(user.email)))
+            return reject(
+                ApiError.badRequest("email already taken by another user")
+            );
+        err = await updateRow("users", user, { userId: userId });
+        if (err instanceof ApiError) return reject(err);
+        return resolve("user updated!");
+    });
 }
 
-async function deleteUser(user) {
-    let sql = `DELETE FROM users WHERE email = "${user.email}"`;
-    await db_generic.dbGetRows(sql);
+function deleteUser(user) {
+    return new Promise(async (resolve, reject) => {
+        err = await deleteRow("users", { userId: user.userId });
+        if (err instanceof ApiError) return reject(err);
+        return resolve("user updated!");
+    });
 }
 
 async function createSlug(fullName) {
@@ -75,9 +88,11 @@ async function getUserByMail(inputEmail) {
 
 async function getUser(jsonQueryObject) {
     //for example to get user by email: getUser({ email: userEmail})
-    filters = createSearchQuery(jsonQueryObject);
-    sql = `SELECT * FROM users WHERE ${filters} `;
-    data = await db_generic.dbGetRows(sql);
+    data = await getRow("users", "*", jsonQueryObject);
+    if (data instanceof ApiError) {
+        console.log(data);
+        return;
+    }
     return data[0];
 }
 module.exports = {

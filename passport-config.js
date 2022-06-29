@@ -1,15 +1,14 @@
 const LocalStrategy = require("passport-local").Strategy;
-const userMiddleware = require("./models/users");
+const userApi = require("./models/users-api");
 const bcrypt = require("bcrypt");
-const { insertNewRow } = require("./database/db_interaction");
 
 function initiliaze(passport) {
     const loginUser = async (userEmail, password, done) => {
-        if (!(await userMiddleware.checkIfUserExists(userEmail))) {
+        if (!(await userApi.checkIfUserExists(userEmail))) {
             // return done(err, user, {message: "No user with that email"})
             return done(null, false, { message: "No user with that email" });
         }
-        const user = await userMiddleware.getUser({ email: userEmail });
+        const user = await userApi.getUser({ email: userEmail });
         try {
             if (await bcrypt.compare(password, user.password)) {
                 return done(null, user);
@@ -22,16 +21,14 @@ function initiliaze(passport) {
     };
 
     const registerUser = async (req, userEmail, password, done) => {
-        let newUser = await userMiddleware.createUser(req.body);
-        if (await userMiddleware.checkIfUserExists(newUser.email)) {
-            console.log("user already exists");
+        let newUser = await userApi.createUser(req.body);
+        if (await userApi.checkIfUserExists(newUser.email)) {
             return done(null, false, { message: "user already exists" });
         }
-        if (userMiddleware.saveUser(newUser)) {
-            var reqNewUser = await userMiddleware.getUser({ email: userEmail });
+        if (await userApi.saveUser(newUser)) {
+            var reqNewUser = await userApi.getUserByMail(userEmail);
             return done(null, reqNewUser);
         }
-
         return done(null, false, {
             message: "user could not be added to database",
         });
@@ -48,9 +45,9 @@ function initiliaze(passport) {
             registerUser
         )
     );
-    passport.serializeUser((user, done) => done(null, user.id));
+    passport.serializeUser((user, done) => done(null, user.userId));
     passport.deserializeUser(async (userId, done) => {
-        var userById = await userMiddleware.getUser({ id: userId });
+        var userById = await userApi.getUser({ userId: userId });
         return done(null, userById);
     });
 }

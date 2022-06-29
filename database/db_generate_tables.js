@@ -5,7 +5,7 @@ async function createUserTable(req, res) {
         "firstName VARCHAR(255), middleName VARCHAR(255), lastName VARCHAR(255),";
     let credential = "email VARCHAR(255), password text, slugURL VARCHAR(255),";
     let sql =
-        "CREATE TABLE users(id int AUTO_INCREMENT, createdAt DATETIME, birthday DATETIME, websiteRole VARCHAR(255) DEFAULT 'user', " +
+        "CREATE TABLE users(id int AUTO_INCREMENT, createdAt DATE, birthday DATE, websiteRole VARCHAR(255) DEFAULT 'user', " +
         names +
         credential +
         "  PRIMARY KEY(id)) ";
@@ -16,4 +16,19 @@ async function createUserTable(req, res) {
     });
 }
 
-module.exports = createUserTable;
+async function createUserMembershipsTable(req, res) {
+    let date = "startDate DATE DEFAULT CURRENT_DATE(), endDate DATE,";
+    let name = "membershipName VARCHAR(255) NOT NULL,";
+    let sql =
+        "CREATE TABLE userMemberships(membershipId int AUTO_INCREMENT, userId int NOT NULL," +
+        date +
+        name +
+        "  PRIMARY KEY(membershipId), FOREIGN KEY (userId) REFERENCES users(id))";
+    db = getConn();
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        res.send("users table created");
+    });
+}
+
+module.exports = { createUserTable, createUserMembershipsTable };

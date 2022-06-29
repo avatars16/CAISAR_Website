@@ -2,6 +2,7 @@
 //const db = new sqlite3.Database('./Users.db',sqlite3.OPEN_READWRITE);
 
 const mysql = require("mysql");
+const ApiError = require("../error/data-errors");
 
 function getConn() {
     let db = mysql.createConnection({
@@ -19,33 +20,20 @@ function getConn() {
     return db;
 }
 
-async function dbQuery(sql, param) {
-    console.log("dbQuery sql: " + sql + "params" + param);
-    var db = getConn();
-    var data = new Promise((resolve, reject) => {
-        db.query(sql, param, (err, result) => {
-            if (err) reject(err);
-            resolve(result);
-        });
-    });
-    db.end();
-    return data;
-}
+function dbQuery(sql, placeholders) {
+    console.log("dbQuery sql: " + sql);
+    console.info(placeholders);
 
-async function dbGetRows(sql) {
-    console.log("dbGetRows sql: " + sql);
-    var data = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         var db = getConn();
-        db.query(sql, (err, result) => {
+        db.query(sql, placeholders, (err, result, fields) => {
             if (err) {
-                reject(err);
-                db.end();
+                return reject(ApiError.internal("Invalid database query"));
             }
-            resolve(result);
-            db.end();
+            return resolve(result);
         });
+        db.end();
     });
-    return data;
 }
 
-module.exports = { dbQuery, dbGetRows, getConn };
+module.exports = { dbQuery, getConn };

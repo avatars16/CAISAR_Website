@@ -19,7 +19,7 @@ function notAuthUser(req, res, next) {
 function authRole(role) {
     return (req, res, next) => {
         if (req.user.websiteRole !== role) {
-            next(ApiError.forbidden("You need to be signed in"));
+            next(ApiError.forbidden("You do not have the permissions"));
             return;
         }
         next();

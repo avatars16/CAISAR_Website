@@ -35,7 +35,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const lsRouter = require("./routes/ls")(passport);
-const userRouter = require("./routes/users")(passport);
+const userRouter = require("./routes/users-route")(passport);
 const databaseRouter = require("./routes/database");
 const indexRouter = require("./routes/index");
 

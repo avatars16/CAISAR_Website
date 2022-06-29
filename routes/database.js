@@ -7,6 +7,9 @@ router.get("/createUserTable", (req, res) => {
     createUserTable(req, res);
 });
 
+router.get("/createMembershipTable", (req, res) => {
+    createUserTable.createUserMembershipsTable(req, res);
+});
 router.get("/dropTable/:table", (req, res) => {
     console.log(req.params.table);
     let sql = `DROP TABLE ${req.params.table}`;
