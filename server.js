@@ -50,5 +50,9 @@ app.use("/committees", committeesRouter);
 app.use("/", indexRouter);
 
 app.use(apiErrorHandler);
+app.use((req, res, next) => {
+    res.status(404);
+    res.render("errors/basic-error-page", { errorMsg: "page does not exist" });
+});
 
 app.listen(3000);

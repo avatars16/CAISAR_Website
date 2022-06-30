@@ -6,41 +6,24 @@
                 if(member.userId){
                 %>
                 <%=member.firstName%>
+                <%=member.slugURL%>
                 <br>
-                <%
-                    for(let prop in member){
-                        if(!notShowForMembers.includes(String(prop))){
-                        %>
-                        <fieldset>
-                            <label for= <%= prop %> > 
-                                <%
-                                var rowName = prop.replace(/([A-Z])/g, " $1");
-                                var finalRowName = rowName.charAt(0).toLowerCase() + rowName.slice(1)
-                                %>
-                                <%= finalRowName%>
-                            </label>
-                            <input type="text" name= <%= prop %> id= <%= prop %> value= <%-member[prop] %>>
-                        </fieldset>
-                        <fieldset>
-                            <label for= "startDate" > startDate </label>
-                            <input type="date" name= "startDate" id= "startDate" value = <%= member.startDate%>>
-                        </fieldset>
-                        <fieldset>
-                            <label for= "endDate" > endDate </label>
-                            <input type="date" name= "endDate" id= "endDate" value = <%= member.startDate%>>
-                        </fieldset>
-    <% } } } } %> 
-
-    <fieldset>
-            <label for= "startDate" > startDate </label>
-            <input type="date" name= "startDate" id= "startDate" value = <%= committee.startDate%>>
-    </fieldset>
-    <fieldset>
-            <label for= "endDate" > endDate </label>
-            <input type="date" name= "endDate" id= "endDate" value = <%= committee.startDate%>>
-    </fieldset>
+                <fieldset>
+                    <label for= "memberRole" > Member role </label>
+                    <input type="text" name= "memberRole" id= "memberRole" value = <%= member.memberRole%>>
+                </fieldset>
+                <fieldset>
+                    <label for= "startDate" > Start data </label>
+                    <input type="date" name= "startDate" id= "startDate" value = <%= member.startDate%>>
+                </fieldset>
+                <fieldset>
+                    <label for= "endDate" > End date </label>
+                    <input type="date" name= "endDate" id= "endDate" value = <%= member.startDate%>>
+                </fieldset>
+    <% } } %> 
     <button type="submit">Change</button>
 </form>
+<!--Search option would be nice-->
 <form action="/committees/<%=committee.committeeSlug %>/edit" method="post">
     <label for="slugURL">Userslug</label>
     <input type="slugURL" name="slugURL" id="slugURL">

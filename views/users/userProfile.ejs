@@ -22,19 +22,23 @@
 <h1>Committees</h1>
 <table>
     <tr>
-        <th>Column</th>
-        <th>Value</th>
+        <th>Committee name</th>
+        <th>Committee url</th>
+        <th>Role</th>
+        <th>Member since</th>
+        <th>End Date</th>
     </tr>
     <% 
     let notShowForMembers = ["committeeId","userId"]
-    console.log("committee")
-    console.info(committees)
     for (let member of committees) {
-        console.log("member")
-        console.info(member)
         %>
         <td><%= member.committeeName +'\t'%> </td>
-         <td><a href="/committees/<%= member.committeeSlug%>/view"><%=  member.committeeSlug%></a></td>
+        <td><a href="/committees/<%= member.committeeSlug%>/view"><%=  member.committeeSlug%></a></td>
+        <td><%= member.memberRole%></td>
+        <td><%= member.startDate.toDateString()%></td>
+        <%if(member.endDate){%>
+            <td><%= member.endDate.toDateString()%></td>
+        <%}%>
     <% }%> 
 </table>
 <br>

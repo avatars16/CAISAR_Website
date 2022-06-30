@@ -28,7 +28,7 @@ module.exports = function (passport) {
     //Add auth check!
     router
         .route("/new")
-        .get(async (req, res, next) => {
+        .get(authUser, authRole(ROLE.ADMIN), async (req, res, next) => {
             let committees = await getAllCommittees();
             res.render("committees/newCommittee");
             next();
