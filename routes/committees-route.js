@@ -78,6 +78,8 @@ module.exports = function (passport) {
                 memberRole: memberRole.memberRole,
                 role: COMMITTEEROLE,
                 hasPermission: hasPermission,
+                memberRole: memberRole.memberRole,
+                role: COMMITTEEROLE,
                 signedInUser: req.isAuthenticated(),
             });
         } catch (error) {
