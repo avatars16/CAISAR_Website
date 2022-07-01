@@ -1,0 +1,40 @@
+<br>
+<h1>Edit committee: <%- committee.committeeName%></h1>
+<form action="/committees/<%=committee.committeeSlug %>/edit?_method=PUT" method="post">
+    <% let notShow = ["committeeId","userId","committeeSlug", "startDate","endDate", "memberRole"]
+        for (let prop in committee) {
+            if(!notShow.includes(String(prop))){ %>
+        <fieldset>
+            <label for= <%= prop %> > 
+                <%
+                var rowName = prop.replace(/([A-Z])/g, " $1");
+                var finalRowName = rowName.charAt(0).toLowerCase() + rowName.slice(1)
+                %>
+                <%= finalRowName%>
+            </label>
+            <input type="text" name= <%= prop %> id= <%= prop %> value= <%-committee[prop] %>>
+        </fieldset>
+    <% } } %> 
+    <%
+    let getStartDate = committee.startDate.toISOString().split("T")[0]
+    let getEndDate
+    if(committee.endDate){
+    getEndDate  = committee.endDate.toISOString().split("T")[0]
+    }
+    %>
+    <fieldset>
+            <label for= "startDate" > startDate </label>
+            <input type="date" name= "startDate" id= "startDate" value = <%= getStartDate%>>
+    </fieldset>
+    <fieldset>
+            <label for= "endDate" > endDate </label>
+            <input type="date" name= "endDate" id= "endDate" value = <%= getEndDate%>>
+    </fieldset>
+    <button type="submit">Change</button>
+</form>
+<% if(checkAuth(user.websiteRole, role.ADMIN)) {%>
+<form action="/committees/<%=committee.committeeSlug %>/edit?_method=DELETE" method="post">
+    <button type="submit">Delete</button>
+    </form>
+<%}%>
+<br>

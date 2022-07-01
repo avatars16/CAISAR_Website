@@ -1,12 +1,15 @@
 const express = require("express");
-const createUserTable = require("../models/db_generate_tables");
-const db = require("../models/db_generic");
+const createUserTable = require("../database/db_generate_tables");
+const db = require("../database/db_generic");
 const router = express.Router();
 
 router.get("/createUserTable", (req, res) => {
     createUserTable(req, res);
 });
 
+router.get("/createMembershipTable", (req, res) => {
+    createUserTable.createUserMembershipsTable(req, res);
+});
 router.get("/dropTable/:table", (req, res) => {
     console.log(req.params.table);
     let sql = `DROP TABLE ${req.params.table}`;

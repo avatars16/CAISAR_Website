@@ -1,0 +1,58 @@
+<br />
+<h1>Committee overview</h1>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Value</th>
+    </tr>
+    <%  let notShow=["committeeId","userId","memberRole"    ];
+        for (let prop in committee) {
+            if(!notShow.includes(String(prop)) && committee[prop]){ %>
+            <tr>
+                <td><%= prop %></td>
+                    <%
+                    if(prop == "startDate" || prop == "endDate"){
+                    %>
+                    <td><%= committee[prop].toDateString() %></td>
+                    <%}else{%>
+                     <td><%= committee[prop] %></td>
+                     <%}%>
+            </tr>
+        <% } } %>
+</table>
+<% if(hasPermission(user.websiteRole, role.CHAIR)) { %>
+<a href="/committees/<%= committee.committeeSlug %>/edit">edit committee</a>
+<%}%>
+<br />
+<h1>Members</h1>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>User url</th>
+        <th>Role</th>
+        <th>Member since</th>
+        <th>End Date</th>
+    </tr>
+    </tr>
+    <% let notShowForMembers=["committeeId","userId"]; for (let member of
+    committeeMembers) { if(member.userId){ %>
+    <tr>
+        <% if(member.middleName){%>
+        <td><%= member.firstName + ' ' + member.middleName +' '+ member.lastName+' \t'%></td>
+        <td><a href="<%= member.slugURL%>"> <%= member.slugURL%> </a></td>
+        <%} else {%>
+        <td><%= member.firstName + ' ' + member.lastName +'\t'%></td>
+        <td><a href="/users/<%= member.slugURL%>/"> <%= member.slugURL%> </a></td>
+        <%}%>
+        <td><%= member.memberRole%></td>
+        <td><%= member.startDate.toDateString()%></td>
+        <%if(member.endDate){%>
+            <td><%= member.endDate.toDateString()%></td>
+        <%}%>
+    </tr>
+    <% } } %>
+</table>
+<% if(hasPermission(user.websiteRole, role.CHAIR)) { %>
+<a href="/committees/<%= committee.committeeSlug %>/members/edit">edit members</a>
+<%}%>
+<br />
