@@ -64,10 +64,12 @@ module.exports = function (passport) {
                 "userId",
                 { committeeName: committee.committeeName }
             );
-            memberRole = await getMemberRoleInCommittee(
-                committee.committeeName,
-                req.user.userId
-            );
+            memberRole = COMMITTEEROLE.MEMBER;
+            if (req.user)
+                memberRole = await getMemberRoleInCommittee(
+                    committee.committeeName,
+                    req.user.userId
+                );
 
             res.render("committees/committeeOverview", {
                 committee: committee,

@@ -65,17 +65,26 @@ function updateCommittee(committee, committeeSlug, oldName) {
             newCommitteeSlug = await createCommitteeSlug(
                 committee.committeeName
             );
+            //Update all committee names
             err = await updateRow(
                 "committees",
                 { committeeName: committee.committeeName },
                 { committeeSlug: committeeSlug }
             );
             if (err instanceof ApiError) return reject(err);
+            //Update all committee slugs
             err = await updateRow(
                 "committees",
                 { committeeSlug: newCommitteeSlug },
                 { committeeName: committee.committeeName }
             );
+            //update the committee name in the parent column
+            err = await updateRow(
+                "committees",
+                { committeeParent: committee.committeeName },
+                { committeeParent: oldName }
+            );
+
             //update committeeName where name=name and not memberrole
             if (err instanceof ApiError) return reject(err);
             err = await updateRowNull("committees", committee, "memberRole", {
