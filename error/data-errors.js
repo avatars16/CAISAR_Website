@@ -1,32 +1,34 @@
 class ApiError {
-    constructor(code, message) {
+    constructor(code, message, redirect, url) {
         this.code = code;
         this.message = message;
+        this.url = url;
+        this.redirect = redirect;
     }
 
     // Client error: e.g., malformed request syntax, invalid request message framing, or deceptive request routing
-    static badRequest(msg) {
-        return new ApiError(400, msg);
+    static badRequest(msg, redirect = false, url) {
+        return new ApiError(400, msg, redirect, url);
     }
 
     // Client is not authenticated
-    static unautharized(msg) {
-        return new ApiError(401, msg);
+    static unautharized(msg, redirect = false, url) {
+        return new ApiError(401, msg, redirect, url);
     }
 
     //Client is authenticated, but has not acces to this page
-    static forbidden(msg) {
-        return new ApiError(403, msg);
+    static forbidden(msg, redirect = false, url) {
+        return new ApiError(403, msg, redirect, url);
     }
 
     //URL is not recognized
-    static notFound(msg) {
-        return new ApiError(404, msg);
+    static notFound(msg, redirect = false, url) {
+        return new ApiError(404, msg, redirect, url);
     }
 
     //Internal server error
-    static internal(msg) {
-        return new ApiError(500, msg);
+    static internal(msg, redirect = false, url) {
+        return new ApiError(500, msg, redirect, url);
     }
 }
 

@@ -3,14 +3,18 @@ const { ROLE, COMMITTEEROLE } = require("../models/data");
 
 function authUser(req, res, next) {
     if (req.isAuthenticated()) return next();
-    next(ApiError.unautharized("You need to be signed in"));
+    next(ApiError.unautharized("You need to be signed in", false, "/ls/login"));
     return;
 }
 
 function notAuthUser(req, res, next) {
     if (req.isAuthenticated()) {
         next(
-            ApiError.unautharized("You can not acces this page while signed in")
+            ApiError.unautharized(
+                "You can not acces this page while signed in",
+                true,
+                "/ls/"
+            )
         );
         return;
     }
