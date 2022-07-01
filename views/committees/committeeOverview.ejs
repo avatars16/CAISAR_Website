@@ -5,7 +5,7 @@
         <th>Column</th>
         <th>Value</th>
     </tr>
-    <%  let notShow=["committeeId","userId","memberRole"    ];
+    <%  let notShow=["committeeId","userId","memberRole"];
         for (let prop in committee) {
             if(!notShow.includes(String(prop)) && committee[prop]){ %>
             <tr>
@@ -13,16 +13,17 @@
                     <%
                     if(prop == "startDate" || prop == "endDate"){
                     %>
-                    <td><%= committee[prop].toDateString() %></td>
+                    <td><%= committee[prop].toDateString()%></td>
                     <%}else{%>
-                     <td><%= committee[prop] %></td>
+                     <td><%= committee[prop]%></td>
                      <%}%>
             </tr>
         <% } } %>
 </table>
-<% if(hasPermission(user.websiteRole, role.CHAIR)) { %>
+<%if(signedInUser){ 
+if(hasPermission(user.websiteRole, role.CHAIR) || hasPermission(memberRole, role.CHAIR)) { %>
 <a href="/committees/<%= committee.committeeSlug %>/edit">edit committee</a>
-<%}%>
+<%}}%>
 <br />
 <h1>Members</h1>
 <table>
@@ -39,10 +40,10 @@
     <tr>
         <% if(member.middleName){%>
         <td><%= member.firstName + ' ' + member.middleName +' '+ member.lastName+' \t'%></td>
-        <td><a href="<%= member.slugURL%>"> <%= member.slugURL%> </a></td>
+        <td><a href="<%= member.sg%>"> <%= member.userSlug%> </a></td>
         <%} else {%>
         <td><%= member.firstName + ' ' + member.lastName +'\t'%></td>
-        <td><a href="/users/<%= member.slugURL%>/"> <%= member.slugURL%> </a></td>
+        <td><a href="/users/<%= member.userSlug%>/"> <%= member.userSlug%> </a></td>
         <%}%>
         <td><%= member.memberRole%></td>
         <td><%= member.startDate.toDateString()%></td>
@@ -52,7 +53,9 @@
     </tr>
     <% } } %>
 </table>
-<% if(hasPermission(user.websiteRole, role.CHAIR)) { %>
+<% 
+if(signedInUser){
+if(hasPermission(user.websiteRole, role.CHAIR)) { %>
 <a href="/committees/<%= committee.committeeSlug %>/members/edit">edit members</a>
-<%}%>
+<%}}%>
 <br />

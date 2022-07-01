@@ -53,7 +53,11 @@ app.use("/", indexRouter);
 app.use(apiErrorHandler);
 app.use((req, res, next) => {
     res.status(404);
-    res.render("errors/basic-error-page", { errorMsg: "page does not exist" });
+    res.render("errors/basic-error-page", {
+        errorMsg: `The page ${req.originalUrl} does not exists`,
+        url: req.header("Referer"),
+        path: req.header("Referer"),
+    });
 });
 
 app.listen(3000);

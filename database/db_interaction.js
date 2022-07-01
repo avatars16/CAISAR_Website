@@ -10,15 +10,25 @@ async function addNewRow(table, setValues) {
 }
 
 async function updateRow(table, setValues, filter) {
-    let sql = `UPDATE ${table} SET ? WHERE ?`;
-    return db_generic.dbQuery(sql, [setValues, filter]).catch((err) => {
+    prepareStmt = getPrepareStmt(filter);
+    let sql = `UPDATE ${table} SET ? WHERE ${prepareStmt[0]}`;
+    return db_generic.dbQuery(sql, [setValues, prepareStmt[1]]).catch((err) => {
+        return err;
+    });
+}
+
+async function updateRowNull(table, setValues, nullColumn, filter) {
+    prepareStmt = getPrepareStmt(filter);
+    let sql = `UPDATE ${table} SET ? WHERE ${nullColumn} IS NULL AND ${prepareStmt[0]}`;
+    return db_generic.dbQuery(sql, [setValues, prepareStmt[1]]).catch((err) => {
         return err;
     });
 }
 
 async function deleteRow(table, filter) {
-    let sql = `DELETE FROM ${table} WHERE ?`;
-    return db_generic.dbQuery(sql, filter).catch((err) => {
+    prepareStmt = getPrepareStmt(filter);
+    let sql = `DELETE FROM ${table} WHERE ${prepareStmt[0]}`;
+    return db_generic.dbQuery(sql, prepareStmt[1]).catch((err) => {
         return err;
     });
 }
@@ -98,6 +108,7 @@ async function searchInColumns(table, selectValues, searchItem, searchColumns) {
 module.exports = {
     searchInColumns,
     updateRow,
+    updateRowNull,
     addNewRow,
     deleteRow,
     getSpecificRows,

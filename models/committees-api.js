@@ -8,49 +8,101 @@ const {
     getSpecificRows,
     getAllRows,
     searchInColumns,
+    updateRowNull,
 } = require("../database/db_interaction");
+const helper = require("./helper-functions");
 const slugify = require("slugify");
 const ApiError = require("../error/data-errors");
 const apiErrorHandler = require("../error/error-handler");
 const data = require("./data");
 const { search } = require("../routes");
+const { createPool } = require("mysql");
 
 async function newCommittee(name, committee) {
     return new Promise(async (resolve, reject) => {
-        if (name == null)
-            return reject(ApiError.badRequest("Name is required"));
+        if (!name) return reject(ApiError.badRequest("Name is required"));
         if (await getCommitteeByName(name))
             return reject(ApiError.badRequest("Name already exists"));
-        let newCommittee = {
-            startDate: new Date(),
-            committeeName: name,
-            committeeSlug: await createCommitteeSlug(name),
-        };
-        if (committee.startDate)
-            newCommittee["startDate"] = committee.startDate;
-        if (committee.endDate) newCommittee["endDate"] = committee.endDate;
+        if (!committee.committeeType)
+            return reject(ApiError.badRequest("Type is required"));
+        let newCommittee = helper.deleteEmptyFields(committee);
+        newCommittee.committeeSlug = await createCommitteeSlug(
+            newCommittee.committeeName
+        );
+        newCommittee.startDate = new Date();
+        if (committee.committeeParent) {
+            if (!(await getCommitteeByName(committee.committeeParent)))
+                return reject(
+                    ApiError.badRequest(
+                        `A committee with name: ${committeee.committeeParent} does not exists`
+                    )
+                );
+            newCommittee["committeeParent"] = committee.committeeParent;
+        }
         let err = await addNewRow("committees", newCommittee);
         if (err instanceof ApiError) return reject(err);
         return resolve("committee created");
     });
 }
 
-//The part which checks if name is already taken is incorrect
-//Problem is that create slug will always create a unique one
-//Cant acces the old name, cause it is not explicitly saved in the req
 function updateCommittee(committee, committeeSlug, oldName) {
     return new Promise(async (resolve, reject) => {
-        err = await updateRow("committees", committee, {
-            committeeSlug: committeeSlug,
-        });
-        if (err instanceof ApiError) return reject(err);
-        return resolve("committee updated!");
+        helper.deleteEmptyFields(committee);
+        if (committee.committeeName != oldName) {
+            if (await getCommitteeByName(committee.committeeName))
+                return reject(
+                    ApiError.badRequest("Committee name already exists")
+                );
+
+            if (committee.committeeParent)
+                if (!(await getCommitteeByName(committee.committeeParent)))
+                    return reject(
+                        ApiError.badRequest(
+                            `Committee parent with name ${committee.committeeParent} does not exist`
+                        )
+                    );
+
+            newCommitteeSlug = await createCommitteeSlug(
+                committee.committeeName
+            );
+            err = await updateRow(
+                "committees",
+                { committeeName: committee.committeeName },
+                { committeeSlug: committeeSlug }
+            );
+            if (err instanceof ApiError) return reject(err);
+            err = await updateRow(
+                "committees",
+                { committeeSlug: newCommitteeSlug },
+                { committeeName: committee.committeeName }
+            );
+            //update committeeName where name=name and not memberrole
+            if (err instanceof ApiError) return reject(err);
+            err = await updateRowNull("committees", committee, "memberRole", {
+                committeeName: committee.committeeName,
+            });
+            return resolve("committee updated!");
+        } else {
+            if (committee.committeeParent)
+                if (!(await getCommitteeByName(committee.committeeParent)))
+                    return reject(
+                        ApiError.badRequest(
+                            `Committee parent with name ${committee.committeeParent} does not exist`
+                        )
+                    );
+
+            err = await updateRow("committees", committee, {
+                committeeSlug: committeeSlug,
+            });
+            if (err instanceof ApiError) return reject(err);
+            return resolve("committee updated!");
+        }
     });
 }
 
 function deleteCommittee(committeeName) {
     return new Promise(async (resolve, reject) => {
-        let allResults = await getCommitteeMembers({
+        let allResults = await getAllCommitteeRows({
             committeeName: committeeName,
         });
         for (result of allResults) {
@@ -63,26 +115,30 @@ function deleteCommittee(committeeName) {
     });
 }
 
-function addMemberToCommittee(committeeName, user) {
+function addMemberToCommittee(committeeSlug, user) {
     return new Promise(async (resolve, reject) => {
-        if (!(await getCommitteeByName(committeeName)))
+        committee = await getCommitteeBySlug(committeeSlug);
+        if (!committee)
             return reject(
                 ApiError.badRequest("This committee does not exists")
             );
-        newRow = {
+        newMember = {
             startDate: new Date(),
-            committeeName: committeeName,
+            committeeName: committee.committeeName,
+            memberRole: "member",
             userId: user.userId,
+            committeeSlug: committeeSlug,
         };
-        err = await addNewRow("committees", newRow);
+        err = await addNewRow("committees", newMember);
         if (err instanceof ApiError) return reject(err);
         return resolve("user updated!");
     });
 }
 
-function updateMemberInCommittee(committee, userId) {
+function updateMemberInCommittee(updatedInfo, userId) {
     return new Promise(async (resolve, reject) => {
-        err = await updateRow("committees", committee, { userId: userId });
+        helper.deleteEmptyFields(updatedInfo);
+        err = await updateRow("committees", updatedInfo, { userId: userId });
         if (err instanceof ApiError) return reject(err);
         return resolve("Member in committee updated!");
     });
@@ -90,7 +146,10 @@ function updateMemberInCommittee(committee, userId) {
 
 function deleteMemberInCommittee(committee, userId) {
     return new Promise(async (resolve, reject) => {
-        err = await deleteRow("committees", { userId: userId });
+        err = await deleteRow("committees", {
+            userId: userId,
+            committeeName: committee.committeeName,
+        });
         if (err instanceof ApiError) return reject(err);
         return resolve("Member in committee updated!");
     });
@@ -117,6 +176,18 @@ async function getMemberRoleInCommittee(committeeName, memberId) {
         return;
     }
     return data[0];
+}
+
+function getAllCommitteeMembersByCommitteeName(committeeName) {
+    return new Promise(async (resolve, reject) => {
+        let data = await getSpecificRows("committees", "*", {
+            committeeName: committeeName,
+        });
+        if (data instanceof ApiError) {
+            return reject(data);
+        }
+        return resolve(data);
+    });
 }
 
 async function getAllCommitteeRows(jsonQueryObject) {

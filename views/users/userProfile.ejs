@@ -17,8 +17,8 @@
     <% } } %> 
 </table>
 <br>
-<%if (checkAuth(currentUser, reqUser.slugURL)) {%>
-<a href="/users/<%= reqUser.slugURL%>/edit">edit</a>
+<%if (checkAuth(currentUser, reqUser.userSlug)) {%>
+<a href="/users/<%= reqUser.userSlug%>/edit">edit</a>
 <br>
 <%}%>
 <h1>Committees</h1>
@@ -35,7 +35,7 @@
     for (let member of committees) {
         %>
         <td><%= member.committeeName +'\t'%> </td>
-        <td><a href="/committees/<%= member.committeeSlug%>/view"><%=  member.committeeSlug%></a></td>
+        <td><a href="/committees/<%= member.committeeSlug%>/"><%=  member.committeeSlug%></a></td>
         <td><%= member.memberRole%></td>
         <td><%= member.startDate.toDateString()%></td>
         <%if(member.endDate){%>

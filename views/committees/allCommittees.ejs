@@ -10,7 +10,7 @@
     </tr>
     <% 
     for (committee of committees){
-        if(committee.committeeSlug){
+        if(!committee.memberRole){
         %>
         <tr>
             <td><%= committee.committeeName%></td>
