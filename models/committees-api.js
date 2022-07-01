@@ -17,7 +17,6 @@ const { search } = require("../routes");
 
 async function newCommittee(name, committee) {
     return new Promise(async (resolve, reject) => {
-        console.log(await name);
         if (name == null)
             return reject(ApiError.badRequest("Name is required"));
         if (await getCommitteeByName(name))
@@ -50,7 +49,6 @@ function updateCommittee(committee, committeeSlug, oldName) {
 }
 
 function deleteCommittee(committeeName) {
-    console.log("start delete");
     return new Promise(async (resolve, reject) => {
         let allResults = await getCommitteeMembers({
             committeeName: committeeName,
@@ -106,8 +104,23 @@ async function getCommitteeBySlug(committeeSlug) {
     return await getCommittee({ committeeSlug: committeeSlug });
 }
 
-async function getAllCommittees() {
-    let data = await getAllRows("committees", "*");
+async function getCommittee(jsonQueryObject) {
+    //for example to get user by email: getUser({ email: userEmail})
+    return (await getAllCommitteeRows(jsonQueryObject))[0];
+}
+
+async function getMemberRoleInCommittee(committeeName, memberId) {
+    let filter = { committeeName: committeeName, userId: memberId };
+    let data = await getSpecificRows("committees", "memberRole", filter);
+    if (data instanceof ApiError) {
+        console.log(data);
+        return;
+    }
+    return data[0];
+}
+
+async function getAllCommitteeRows(jsonQueryObject) {
+    let data = await getSpecificRows("committees", "*", jsonQueryObject);
     if (data instanceof ApiError) {
         console.log(data);
         return;
@@ -115,13 +128,8 @@ async function getAllCommittees() {
     return data;
 }
 
-async function getCommittee(jsonQueryObject) {
-    //for example to get user by email: getUser({ email: userEmail})
-    return (await getCommitteeMembers(jsonQueryObject))[0];
-}
-
-async function getCommitteeMembers(jsonQueryObject) {
-    let data = await getSpecificRows("committees", "*", jsonQueryObject);
+async function getAllCommittees() {
+    let data = await getAllRows("committees", "*");
     if (data instanceof ApiError) {
         console.log(data);
         return;
@@ -164,6 +172,6 @@ module.exports = {
     deleteMemberInCommittee,
     getAllCommittees,
     getCommitteeBySlug,
-    getCommitteeMembers,
+    getMemberRoleInCommittee,
     getCommitteeByName,
 };

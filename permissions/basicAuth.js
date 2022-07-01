@@ -1,4 +1,5 @@
 const ApiError = require("../error/data-errors");
+const { ROLE, COMMITTEEROLE } = require("../models/data");
 
 function authUser(req, res, next) {
     if (req.isAuthenticated()) return next();
@@ -16,9 +17,9 @@ function notAuthUser(req, res, next) {
     return next();
 }
 
-function authRole(role) {
+function authRole(neededRole) {
     return (req, res, next) => {
-        if (req.user.websiteRole !== role) {
+        if (!hasPermission(req.user.websiteRole, neededRole)) {
             next(ApiError.forbidden("You do not have the permissions"));
             return;
         }
@@ -26,4 +27,21 @@ function authRole(role) {
     };
 }
 
-module.exports = { authUser, notAuthUser, authRole };
+function hasPermission(userRole, neededRole) {
+    console.log("hasPermission");
+    console.log(userRole, neededRole);
+    if (userRole == neededRole) return true;
+    if (userRole == ROLE.ADMIN) return true;
+    if (
+        userRole == ROLE.BOARD &&
+        (neededRole == ROLE.BASIC ||
+            neededRole == COMMITTEEROLE.CHAIR ||
+            neededRole == COMMITTEEROLE.MEMBER)
+    )
+        return true;
+    if (userRole == COMMITTEEROLE.CHAIR && neededRole == COMMITTEEROLE.MEMBER)
+        return true;
+    return false;
+}
+
+module.exports = { authUser, notAuthUser, authRole, hasPermission };

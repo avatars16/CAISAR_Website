@@ -7,18 +7,20 @@
     </tr>
     <% 
     let notShow = ["password","userId","createdAt", "websiteRole"]
-    for (let prop in user) {
+    for (let prop in reqUser) {
         if(!notShow.includes(String(prop))){
         %>
         <tr>
             <td><%= prop %></td>
-            <td><%= user[prop] %></td>
+            <td><%= reqUser[prop] %></td>
         </tr>
     <% } } %> 
 </table>
 <br>
-<a href="/users/<%= user.slugURL%>/edit">edit</a>
+<%if (checkAuth(currentUser, reqUser.slugURL)) {%>
+<a href="/users/<%= reqUser.slugURL%>/edit">edit</a>
 <br>
+<%}%>
 <h1>Committees</h1>
 <table>
     <tr>

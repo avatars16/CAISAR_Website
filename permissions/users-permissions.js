@@ -3,7 +3,16 @@ const { ROLE } = require("../models/data");
 function canViewSpecificUser(currentUser, requestedUserSlug) {
     return (
         currentUser.websiteRole == ROLE.ADMIN ||
-        currentUser.slugURL === requestedUserSlug
+        currentUser.websiteRole == ROLE.BOARD ||
+        currentUser.slugURL == requestedUserSlug
+    );
+}
+
+function canDeleteUser(currentUser, requestedUserSlug) {
+    return (
+        currentUser.websiteRole == ROLE.ADMIN ||
+        currentUser.websiteRole == ROLE.BOARD ||
+        currentUser.slugURL != requestedUserSlug
     );
 }
 
@@ -14,4 +23,4 @@ function hasRole(role, wantedRole) {
     return true;
 }
 
-module.exports = { canViewSpecificUser, hasRole };
+module.exports = { canViewSpecificUser, hasRole, canDeleteUser };

@@ -20,7 +20,9 @@
             </tr>
         <% } } %>
 </table>
+<% if(hasPermission(user.websiteRole, role.CHAIR)) { %>
 <a href="/committees/<%= committee.committeeSlug %>/edit">edit committee</a>
+<%}%>
 <br />
 <h1>Members</h1>
 <table>
@@ -40,7 +42,7 @@
         <td><a href="<%= member.slugURL%>"> <%= member.slugURL%> </a></td>
         <%} else {%>
         <td><%= member.firstName + ' ' + member.lastName +'\t'%></td>
-        <td><a href="/users/<%= member.slugURL%>"> <%= member.slugURL%> </a></td>
+        <td><a href="/users/<%= member.slugURL%>/"> <%= member.slugURL%> </a></td>
         <%}%>
         <td><%= member.memberRole%></td>
         <td><%= member.startDate.toDateString()%></td>
@@ -50,8 +52,7 @@
     </tr>
     <% } } %>
 </table>
-
-<a href="/committees/<%= committee.committeeSlug %>/members/edit"
-    >edit members</a
->
+<% if(hasPermission(user.websiteRole, role.CHAIR)) { %>
+<a href="/committees/<%= committee.committeeSlug %>/members/edit">edit members</a>
+<%}%>
 <br />

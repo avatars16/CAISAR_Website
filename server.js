@@ -22,7 +22,7 @@ app.set("layout", "layouts/layout");
 //app.use(express.json());
 app.use(bodyParser.json());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(expressLayouts);
 app.use(express.static("public"));
 app.use(flash());

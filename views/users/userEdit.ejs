@@ -1,29 +1,30 @@
 <br>
-<h1>Edit user: <%- user.firstName%></h1>
-<form action="/users/<%=user.slugURL %>/edit?_method=PUT" method="post">
+<h1>Edit user: <%- reqUser.firstName%></h1>
+<form action="/users/<%=reqUser.slugURL %>/edit?_method=PUT" method="post">
+    <%# Add that only board and admin can change websiteRole. %>
     <% let notShow = ["id","createdAt","slugURL", "birthday", "email","password"]
-        for (let prop in user) {
+        for (let prop in reqUser) {
             if(!notShow.includes(String(prop))){ %>
         <fieldset>
-            <label for= <%= prop %> > 
+            <label for= "<%= prop %> "> 
                 <%
                 var rowName = prop.replace(/([A-Z])/g, " $1");
                 var finalRowName = rowName.charAt(0).toLowerCase() + rowName.slice(1)
                 %>
                 <%= finalRowName%>
             </label>
-            <input type="text" name= <%= prop %> id= <%= prop %> value= <%=user[prop] %>>
+            <input type="text" name= "<%= prop %>" id= "<%= prop %>" value= "<%=reqUser[prop] %>">
         </fieldset>
     <% } } %> 
 
     <fieldset>
             <label for= "birthday" > Birthday </label>
-            <input type="date" name= "birthday" id= "birthday" value = <%= user.birthday%>>
+            <input type="date" name= "birthday" id= "birthday" value = "<%= reqUser.birthday%>">
     </fieldset>
     
     <fieldset>
             <label for= "email" > Email </label>
-            <input type="email" name= "email" id= "email" value = <%- user.email%>>
+            <input type="email" name= "email" id= "email" value = "<%- reqUser.email%>">
     </fieldset>
     <fieldset>
             <label for= "password" > Password</label>
@@ -31,8 +32,8 @@
     </fieldset>
     <button type="submit">Change</button>
 </form>
-<% if(checkAuth(user.websiteRole, role.ADMIN)) {%>
-<form action="/users/<%=user.slugURL %>/edit?_method=DELETE" method="post">
+<% if(hasPermission(currentUser.websiteRole, role.BOARD )) {%>
+<form action="/users/<%=reqUser.slugURL %>/edit?_method=DELETE" method="post">
     <button type="submit">Delete</button>
     </form>
 <%}%>

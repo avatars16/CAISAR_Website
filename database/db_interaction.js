@@ -36,15 +36,27 @@ async function getAllRows(table, selectValues) {
 }
 
 async function getSpecificRows(table, selectValues, filter) {
-    let sql = `SELECT ${selectValues} FROM ${table} WHERE ? `;
+    prepareStmt = getPrepareStmt(filter);
+    let sql = `SELECT ${selectValues} FROM ${table} WHERE ${prepareStmt[0]} `;
     return await db_generic
-        .dbQuery(sql, filter)
+        .dbQuery(sql, prepareStmt[1])
         .then((result) => {
             return result;
         })
         .catch((err) => {
             return ApiError.internal("could not handle this query");
         });
+}
+
+function getPrepareStmt(filter) {
+    values = [];
+    sql = "";
+    for (let column in filter) {
+        values.push(filter[column]);
+        sql += ` ${column} = ? AND`;
+    }
+    sql = sql.slice(0, sql.length - 4);
+    return [sql, values];
 }
 
 async function getDataFromMultipleTables(

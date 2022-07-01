@@ -1,5 +1,5 @@
 <br>
-<h1>All users</h1>
+<h1>All committees</h1>
 
 <label for="search">Search:</label>
 <input type="search" name="search" id="search" onkeyup="sendData(this)">
@@ -14,7 +14,7 @@
         %>
         <tr>
             <td><%= committee.committeeName%></td>
-            <td> <a href="/committees/<%= committee.committeeSlug %>/view"><%= committee.committeeSlug %></a></td>
+            <td> <a href="/committees/<%= committee.committeeSlug %>/"><%= committee.committeeSlug %></a></td>
         </tr>
     <% }}%> 
 </table>
