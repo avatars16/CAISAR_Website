@@ -75,9 +75,10 @@ module.exports = function (passport) {
                 committee: committee,
                 committeeMembers: committeeMembers,
                 user: req.user,
+                role: ROLE,
+                hasPermission: hasPermission,
                 memberRole: memberRole.memberRole,
                 role: COMMITTEEROLE,
-                hasPermission: hasPermission,
                 signedInUser: req.isAuthenticated(),
             });
         } catch (error) {
