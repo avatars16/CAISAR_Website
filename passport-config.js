@@ -11,7 +11,14 @@ function initiliaze(passport) {
         const user = await userApi.getUser({ email: userEmail });
         try {
             if (await bcrypt.compare(password, user.password)) {
-                return done(null, user);
+                result = await userApi.userLoginStatisticsUpdate(
+                    user.numberOfLogins,
+                    user.userId
+                );
+                if (result === true) return done(null, user);
+                return done(null, false, {
+                    message: "could not update inlog count",
+                });
             } else {
                 return done(null, false, { message: "Password incorrect" });
             }
@@ -21,6 +28,15 @@ function initiliaze(passport) {
     };
 
     const registerUser = async (req, userEmail, password, done) => {
+        if (
+            !(
+                req.body.firstName &&
+                req.body.lastName &&
+                req.body.email &&
+                password
+            )
+        )
+            return done(null, false, { message: "Fill in required fields" });
         let newUser = await userApi.createUser(req.body);
         if (await userApi.checkIfUserExists(newUser.email)) {
             return done(null, false, { message: "user already exists" });
