@@ -12,7 +12,7 @@
                 %>
                 <%= finalRowName%>
             </label>
-            <input type="text" name= <%= prop %> id= <%= prop %> value= <%-committee[prop] %>>
+            <input type="text" name= "<%= prop %>" id=" <%= prop %>" value= "<%=committee[prop] %>">
         </fieldset>
     <% } } %> 
     <%
@@ -28,8 +28,8 @@
     </fieldset>
     <fieldset>
             <label for= "endDate" > endDate </label>
-            <input type="date" name= "endDate" id= "endDate" value = <%= getEndDate%>>
-    </fieldset>
+            <input type="date" name= "endDate" id= "endDate" value = <%= getEndDate%>> 
+    </fieldset> 
     <button type="submit">Change</button>
 </form>
 <% if(checkAuth(user.websiteRole, role.ADMIN)) {%>

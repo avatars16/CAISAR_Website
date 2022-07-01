@@ -1,8 +1,8 @@
 <br>
 <h1>Edit user: <%- reqUser.firstName%></h1>
-<form action="/users/<%=reqUser.slugURL %>/edit?_method=PUT" method="post">
+<form action="/users/<%=reqUser.userSlug %>/edit?_method=PUT" method="post">
     <%# Add that only board and admin can change websiteRole. %>
-    <% let notShow = ["id","createdAt","slugURL", "birthday", "email","password"]
+    <% let notShow = ["id","createdAt","userSlug", "birthday", "email","password"]
         for (let prop in reqUser) {
             if(!notShow.includes(String(prop))){ %>
         <fieldset>
@@ -33,7 +33,7 @@
     <button type="submit">Change</button>
 </form>
 <% if(hasPermission(currentUser.websiteRole, role.BOARD )) {%>
-<form action="/users/<%=reqUser.slugURL %>/edit?_method=DELETE" method="post">
+<form action="/users/<%=reqUser.userSlug %>/edit?_method=DELETE" method="post">
     <button type="submit">Delete</button>
     </form>
 <%}%>

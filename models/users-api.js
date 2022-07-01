@@ -9,40 +9,38 @@ const {
     getAllRows,
     searchInColumns,
 } = require("../database/db_interaction");
+const helper = require("../models/helper-functions");
 const slugify = require("slugify");
 const ApiError = require("../error/data-errors");
 const apiErrorHandler = require("../error/error-handler");
 const data = require("./data");
 const { search } = require("../routes");
 
-async function createUser(userParam) {
-    const hashedPassword = await bcrypt.hash(userParam.password, 10);
-    let newUser = {
-        createdAt: new Date(),
-        firstName: userParam.firstName,
-        lastName: userParam.lastName,
-        email: userParam.email,
-        password: hashedPassword,
-        slugURL: await createSlug(
-            userParam.firstName + userParam.middleName + userParam.lastName
-        ),
-    };
-    if (userParam.websiteRole) newUser["websiteRole"] = userParam.role;
-    if (userParam.middleName) newUser["middleName"] = userParam.middleName;
-    if (userParam.birthday) newUser["birthday"] = userParam.birthday;
+async function createUser(newUser) {
+    const hashedPassword = await bcrypt.hash(newUser.password, 10);
+    helper.deleteEmptyFields(newUser);
+    newUser.password = hashedPassword;
+    newUser.createdAt = new Date();
+    let fullName = newUser.firstName + newUser.lastName;
+    if (newUser.middleName)
+        fullName = newUser.firstName + newUser.middleName + newUser.lastName;
+    newUser.userSlug = await createSlug(fullName);
     return newUser;
 }
 
-async function saveUser(userParam) {
-    let data = await addNewRow("users", userParam);
+async function saveUser(newUser) {
+    let data = await addNewRow("users", newUser);
     return data;
 }
 function updateUser(user, userId, oldEmail) {
     return new Promise(async (resolve, reject) => {
-        if (user.password != "")
-            user.password = await bcrypt.hash(user.password, 10);
-        else delete user.password;
-        if (oldEmail != user.email && (await checkIfUserExists(user.email)))
+        helper.deleteEmptyFields(user);
+        if (user.password) user.password = await bcrypt.hash(user.password, 10);
+        if (
+            user.email &&
+            oldEmail != user.email &&
+            (await checkIfUserExists(user.email))
+        )
             return reject(
                 ApiError.badRequest("email already taken by another user")
             );
@@ -62,11 +60,11 @@ function deleteUser(user) {
 
 async function createSlug(fullName) {
     var slugName = slugify(fullName, { lower: true, strict: true });
-    let data = await getUser({ slugURL: slugName });
+    let data = await getUser({ userSlug: slugName });
     if (data == null) return slugName;
     var i = 0;
     newSlugName = slugify(fullName + i, { lower: true, strict: true });
-    while (await getUser({ slugURL: newSlugName })) {
+    while (await getUser({ userSlug: newSlugName })) {
         i++;
         newSlugName = slugify(fullName + i, { lower: true, strict: true });
     }
@@ -82,7 +80,7 @@ async function checkIfUserExists(inputEmail) {
 }
 
 async function getUserBySlug(userSlug) {
-    return await getUser({ slugURL: userSlug });
+    return await getUser({ userSlug: userSlug });
 }
 
 async function getUserByMail(inputEmail) {
@@ -108,6 +106,20 @@ async function getUser(jsonQueryObject) {
     return data[0];
 }
 
+async function userLoginStatisticsUpdate(currentInlogCount, userId) {
+    try {
+        console.log(new Date());
+        await updateRow(
+            "users",
+            { numberOfLogins: currentInlogCount + 1, lastLogin: new Date() },
+            { userId: userId }
+        );
+        return true;
+    } catch (error) {
+        return error;
+    }
+}
+
 async function searchUser(searchItem) {
     return new Promise(async (resolve, reject) => {
         let data = await searchInColumns(
@@ -131,4 +143,5 @@ module.exports = {
     deleteUser,
     getAllUsers,
     searchUser,
+    userLoginStatisticsUpdate,
 };

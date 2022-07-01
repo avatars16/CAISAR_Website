@@ -4,7 +4,7 @@ function canViewSpecificUser(currentUser, requestedUserSlug) {
     return (
         currentUser.websiteRole == ROLE.ADMIN ||
         currentUser.websiteRole == ROLE.BOARD ||
-        currentUser.slugURL == requestedUserSlug
+        currentUser.userSlug == requestedUserSlug
     );
 }
 
@@ -12,7 +12,7 @@ function canDeleteUser(currentUser, requestedUserSlug) {
     return (
         currentUser.websiteRole == ROLE.ADMIN ||
         currentUser.websiteRole == ROLE.BOARD ||
-        currentUser.slugURL != requestedUserSlug
+        currentUser.userSlug != requestedUserSlug
     );
 }
 
