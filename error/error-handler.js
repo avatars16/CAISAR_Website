@@ -13,7 +13,7 @@ function apiErrorHandler(err, req, res, next) {
     if (err instanceof ApiError) {
         res.status(err.code);
         if (err.url) {
-            //goToUrl = err.url;
+            goToUrl = err.url;
             path = req.hostname + err.url;
         }
         if (err.redirect) {
