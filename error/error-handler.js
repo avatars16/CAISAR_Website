@@ -1,5 +1,6 @@
 const ApiError = require("./data-errors");
 
+//TODO: Log to files instead of command line.
 function apiErrorHandler(err, req, res, next) {
     // in prod, don't use console.log or console.err because
     // it is not async

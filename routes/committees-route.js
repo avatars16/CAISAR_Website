@@ -35,10 +35,10 @@ module.exports = function (passport) {
         });
     });
 
+    //TODO: Change view so that sub committees are shown under their parent
     router
         .route("/new")
         .get(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
-            let committees = await getAllCommittees();
             res.render("committees/newCommittee");
             return;
         })
@@ -57,7 +57,6 @@ module.exports = function (passport) {
     router.route("/:committeeSlug/").get(async (req, res, next) => {
         try {
             let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            //Get committee members should also give the columns of users back.
             let committeeMembers = await getDataFromMultipleTables(
                 "users",
                 "committees",
