@@ -15,13 +15,14 @@ const {
 const { getUserBySlug } = require("../models/users-api");
 const {
     getAllCommittees,
-    newCommittee,
-    updateMemberInCommittee,
     getCommitteeBySlug,
+    getMemberRoleInCommittee,
+    newCommittee,
     updateCommittee,
     deleteCommittee,
-    getMemberRoleInCommittee,
     addMemberToCommittee,
+    updateMemberInCommittee,
+    deleteMemberInCommittee,
 } = require("../models/committees-api");
 const { getDataFromMultipleTables } = require("../database/db_interaction");
 
@@ -65,11 +66,13 @@ module.exports = function (passport) {
                 { committeeName: committee.committeeName }
             );
             memberRole = COMMITTEEROLE.MEMBER;
-            if (req.user)
-                memberRole = await getMemberRoleInCommittee(
+            if (req.user) {
+                possibleMemberRole = await getMemberRoleInCommittee(
                     committee.committeeName,
                     req.user.userId
                 );
+                if (possibleMemberRole) memberRole = possibleMemberRole;
+            }
 
             res.render("committees/committeeOverview", {
                 committee: committee,
@@ -84,7 +87,8 @@ module.exports = function (passport) {
         } catch (error) {
             next(
                 ApiError.badRequest(
-                    `The committee ${req.params.committeeSlug} does not exist`
+                    `The committee ${req.params.committeeSlug} does not exist`,
+                    error
                 )
             );
         }
@@ -163,6 +167,13 @@ module.exports = function (passport) {
         })
         .post(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
             let user = await getUserBySlug(req.body.userSlug);
+            if (!user)
+                next(
+                    ApiError.badRequest(
+                        `User with url: ${req.body.userId} does not exists`,
+                        ""
+                    )
+                );
             let committee = await getCommitteeBySlug(req.params.committeeSlug);
             await addMemberToCommittee(committee.committeeSlug, user)
                 .then((msg) => {
@@ -195,9 +206,10 @@ module.exports = function (passport) {
         })
         .delete(authUser, authRole(ROLE.ADMIN), async (req, res, next) => {
             let committee = await getCommitteeBySlug(req.params.committeeSlug);
+            console.log(req.query, req.query.user);
             await deleteMemberInCommittee(
                 committee.committeeName,
-                req.user.userId
+                req.query.user
             )
                 .then((msg) => {
                     res.redirect(`/committees`);

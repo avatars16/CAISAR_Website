@@ -138,6 +138,13 @@ function addMemberToCommittee(committeeSlug, user) {
             userId: user.userId,
             committeeSlug: committeeSlug,
         };
+        if ((await getMemberRoleInCommittee(committee, user.userId)) == null)
+            return reject(
+                ApiError.badRequest(
+                    `${user.firstName} is already a member of ${committee.committeeName}`,
+                    (redirect = true)
+                )
+            );
         err = await addNewRow("committees", newMember);
         if (err instanceof ApiError) return reject(err);
         return resolve("user updated!");
@@ -153,11 +160,11 @@ function updateMemberInCommittee(updatedInfo, userId) {
     });
 }
 
-function deleteMemberInCommittee(committee, userId) {
+function deleteMemberInCommittee(committeeName, userId) {
     return new Promise(async (resolve, reject) => {
         err = await deleteRow("committees", {
-            userId: userId,
-            committeeName: committee.committeeName,
+            userId,
+            committeeName,
         });
         if (err instanceof ApiError) return reject(err);
         return resolve("Member in committee updated!");

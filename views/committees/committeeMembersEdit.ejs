@@ -1,3 +1,4 @@
+
 <br>
 <h1>Edit members: <%- committee.committeeName%></h1>
 <%  let notShowForMembers = ["committeeId","userId","committeeSlug", "startDate","endDate"]
@@ -23,7 +24,7 @@ for (let member of committeeMembers) {
     <button type="submit">Change</button>
 </form>
 <% if(checkAuth(user.websiteRole, role.ADMIN)) {%>
-<form action="/committees/<%=committee.committeeSlug %>/members/edit?_method=DELETE" method="post">
+<form action= "/committees/<%=committee.committeeSlug%>/members/edit?user=<%=member.userId%>&_method=DELETE" method="post">
     <button type="submit">Delete</button>
 </form>
 <%}%>
@@ -32,8 +33,10 @@ for (let member of committeeMembers) {
 <%#Search option would be nice#%>
 <form action="/committees/<%=committee.committeeSlug %>/members/edit" method="post">
     <label for="userSlug">Userslug</label>
-    <input type="userSlug" name="userSlug" id="userSlug">
+    <input type="userSlug" name="userSlug" id="userSlug" onkeyup="sendData(this)">
     <button type="submit">Add user to this committee</button>    
 </form>
-
+<section id="searchResults"></section>
+<ul id="ulSearchResults" onclick="getUserInLi(event)"></ul>
+<script type="text/javascript" src="/js/searchUserSlug.js"></script>
 <br>

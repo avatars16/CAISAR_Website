@@ -15,6 +15,7 @@ const {
     deleteUser,
     getAllUsers,
     searchUser,
+    searchUserByName,
 } = require("../models/users-api");
 const {
     canViewSpecificUser,
@@ -32,10 +33,11 @@ module.exports = function (passport) {
 
     router.post("/search", authUser, async (req, res, next) => {
         let payload = req.body.payload;
-        await searchUser(payload)
+        console.log(payload);
+        await searchUserByName(payload)
             .then((result) => {
-                console.log(result);
-                res.json({ payload: result });
+                if (result instanceof ApiError) return next(result);
+                res.send({ payload: result });
             })
             .catch((err) => {
                 next(err);

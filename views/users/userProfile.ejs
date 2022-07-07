@@ -34,13 +34,15 @@
     let notShowForMembers = ["committeeId","userId"]
     for (let member of committees) {
         %>
-        <td><%= member.committeeName +'\t'%> </td>
-        <td><a href="/committees/<%= member.committeeSlug%>/"><%=  member.committeeSlug%></a></td>
-        <td><%= member.memberRole%></td>
-        <td><%= member.startDate.toDateString()%></td>
-        <%if(member.endDate){%>
+        <tr>
+            <td><%= member.committeeName +'\t'%> </td>
+            <td><a href="/committees/<%= member.committeeSlug%>/"><%=  member.committeeSlug%></a></td>
+            <td><%= member.memberRole%></td>
+            <td><%= member.startDate.toDateString()%></td>
+            <%if(member.endDate){%>
             <td><%= member.endDate.toDateString()%></td>
-        <%}%>
+        <%}%>    
+        </tr>
     <% }%> 
 </table>
 <br>

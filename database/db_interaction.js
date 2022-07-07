@@ -1,5 +1,6 @@
 const ApiError = require("../error/data-errors");
 const data = require("../models/data");
+const { search } = require("../routes");
 const db_generic = require("./db_generic");
 
 async function addNewRow(table, setValues) {
@@ -91,18 +92,28 @@ async function getDataFromMultipleTables(
         });
 }
 
-//This function does not work,
-//It allways returns an empty database.
-async function searchInColumns(table, selectValues, searchItem, searchColumns) {
-    let sql = `SELECT ${selectValues} FROM ${table} WHERE ? LIKE ?  `;
+async function searchInColumns(table, selectValues, filter, n = 10) {
+    let prepareStm = prepareWhereLikeStmt(filter);
+    let sql = `SELECT ${selectValues} FROM ${table} WHERE (${prepareStm[0]}) LIMIT ${n} `;
     return await db_generic
-        .dbQuery(sql, [searchColumns, searchItem])
+        .dbQuery(sql, prepareStm[1])
         .then((result) => {
             return result;
         })
         .catch((err) => {
-            return ApiError.internal("could not handle this query");
+            return err;
         });
+}
+
+function prepareWhereLikeStmt(filter) {
+    values = [];
+    sql = "";
+    for (let column in filter) {
+        values.push(filter[column]);
+        sql += ` ${column} LIKE ? OR`;
+    }
+    sql = sql.slice(0, sql.length - 3);
+    return [sql, values];
 }
 
 module.exports = {

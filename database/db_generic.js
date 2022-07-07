@@ -28,7 +28,7 @@ function dbQuery(sql, placeholders) {
         var db = getConn();
         db.query(sql, placeholders, (err, result, fields) => {
             if (err) {
-                return reject(ApiError.internal("Invalid database query"));
+                return reject(ApiError.internal("Invalid database query", err));
             }
             return resolve(result);
         });
@@ -42,7 +42,7 @@ function dbSimpleQuery(sql) {
         var db = getConn();
         db.query(sql, (err, result, fields) => {
             if (err) {
-                return reject(ApiError.internal("Invalid database query"));
+                return reject(ApiError.internal("Invalid database query", err));
             }
             return resolve(result);
         });

@@ -120,14 +120,31 @@ async function userLoginStatisticsUpdate(currentInlogCount, userId) {
     }
 }
 
-async function searchUser(searchItem) {
-    return new Promise(async (resolve, reject) => {
-        let data = await searchInColumns(
-            "users",
-            "*",
-            searchItem + "% ",
-            "lastName"
+async function searchUserByName(filterItem, n) {
+    try {
+        let filterStmt = filterItem + "%";
+        users = await searchUser(
+            "firstName, middleName,lastName,userSlug",
+            {
+                firstName: filterStmt,
+                middleName: filterStmt,
+                lastName: filterStmt,
+                userSlug: filterStmt,
+            },
+            3
         );
+        if (users instanceof ApiError) {
+            return users;
+        }
+        return users;
+    } catch (err) {
+        return err;
+    }
+}
+
+async function searchUser(getColumns, filter, n) {
+    return new Promise(async (resolve, reject) => {
+        let data = await searchInColumns("users", getColumns, filter, n);
         if (data instanceof ApiError) return reject(data);
         return resolve(data);
     });
@@ -143,5 +160,6 @@ module.exports = {
     deleteUser,
     getAllUsers,
     searchUser,
+    searchUserByName,
     userLoginStatisticsUpdate,
 };
