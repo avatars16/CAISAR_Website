@@ -38,6 +38,9 @@ module.exports = function (passport) {
     router
         .route("/new")
         .get(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
+            console.info("voor");
+            authRole(ROLE.BOARD);
+            console.info("na");
             res.render("committees/new-committee", {
                 committee: emptyCommittee(),
             });
@@ -55,81 +58,89 @@ module.exports = function (passport) {
                 });
         });
 
-    router.route("/:committeeSlug/").get(async (req, res, next) => {
-        let committee = await getCommitteeBySlug(req.params.committeeSlug);
-        if (committee == [])
-            return next(
-                ApiError.badRequest(
-                    `The committee ${req.params.committeeSlug} does not exist`,
-                    error
-                )
-            );
-        let committeeMembers = await getDataFromMultipleTables(
-            "users",
-            "committees",
-            "userId",
-            "userId",
-            { committeeName: committee.committeeName }
-        );
-        res.render("committees/view-committee", {
-            committee: committee,
-            committeeMembers: committeeMembers,
-            user: req.user,
-            hasEditPermission: getCommitteeMemberPermission(
-                committee.committeeName,
-                req.user
-            ),
-        });
-    });
-
     router
-        .route("/:committeeSlug/edit")
-        .get(authUser, authRole(ROLE.BOARD), async (req, res) => {
-            let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            res.render("committees/edit-committee", {
-                committee: committee,
-                deletePermission: hasPermission(
-                    req.user.websiteRole,
-                    ROLE.ADMIN
-                ),
-            });
-        })
-        .put(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
-            let committee = req.body;
-            let oldName = await getCommitteeBySlug(req.params.committeeSlug);
-            await updateCommittee(
-                committee,
-                req.params.committeeSlug,
-                oldName.committeeName
-            )
-                .then((msg) => {
-                    res.redirect(`/committees/${req.params.committeeSlug}/`);
-                })
-                .catch((err) => {
-                    next(err);
-                });
-        })
-        .delete(authUser, authRole(ROLE.ADMIN), async (req, res, next) => {
-            let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            await deleteCommittee(committee.committeeName)
-                .then((msg) => {
-                    res.redirect(`/committees`);
-                })
-                .catch((err) => {
-                    next(err);
-                });
-        });
-
-    router
-        .route("/:committeeSlug/members/edit")
-        .get(authUser, async (req, res, next) => {
-            let committee = await getCommitteeBySlug(req.params.committeeSlug);
+        .route("/:committeeSlug/")
+        .get(checkIfCommitteePageExists, async (req, res, next) => {
             let committeeMembers = await getDataFromMultipleTables(
                 "users",
                 "committees",
                 "userId",
                 "userId",
-                { committeeName: committee.committeeName }
+                { committeeName: req.committee.committeeName }
+            );
+            res.render("committees/view-committee", {
+                committee: req.committee,
+                committeeMembers: committeeMembers,
+                user: req.user,
+                hasEditPermission: getCommitteeMemberPermission(
+                    req.committee.committeeName,
+                    req.user
+                ),
+            });
+        });
+
+    router
+        .route("/:committeeSlug/edit")
+        .get(
+            authUser,
+            authRole(ROLE.BOARD),
+            checkIfCommitteePageExists,
+            async (req, res) => {
+                res.render("committees/edit-committee", {
+                    committee: req.committee,
+                    deletePermission: hasPermission(
+                        req.user.websiteRole,
+                        ROLE.ADMIN
+                    ),
+                });
+            }
+        )
+        .put(
+            authUser,
+            authRole(ROLE.BOARD),
+            checkIfCommitteePageExists,
+            async (req, res, next) => {
+                let committee = req.body;
+                let oldName = req.committee.committeeName;
+                await updateCommittee(
+                    committee,
+                    req.params.committeeSlug,
+                    oldName
+                )
+                    .then((msg) => {
+                        res.redirect(
+                            `/committees/${req.params.committeeSlug}/`
+                        );
+                    })
+                    .catch((err) => {
+                        next(err);
+                    });
+            }
+        )
+        .delete(
+            authUser,
+            authRole(ROLE.ADMIN),
+            checkIfCommitteePageExists,
+            async (req, res, next) => {
+                await deleteCommittee(req.committee.committeeName)
+                    .then((msg) => {
+                        res.redirect(`/committees`);
+                    })
+                    .catch((err) => {
+                        next(err);
+                    });
+            }
+        );
+
+    router
+        .route("/:committeeSlug/members/edit")
+        .get(authUser, checkIfCommitteePageExists, async (req, res, next) => {
+            let committeeMembers = await getDataFromMultipleTables(
+                "users",
+                "committees",
+                "userId",
+                "userId",
+                { committeeName: req.committee.committeeName }
             );
             if (
                 !getCommitteeMemberPermission(committee.committeeName, req.user)
@@ -138,7 +149,7 @@ module.exports = function (passport) {
                     ApiError.forbidden("You do not have acces to this page")
                 );
             res.render("committees/edit-committee-members", {
-                committee: committee,
+                committee: req.committee,
                 committeeMembers: committeeMembers,
                 deletePermission: hasPermission(
                     req.user.websiteRole,
@@ -146,30 +157,37 @@ module.exports = function (passport) {
                 ),
             });
         })
-        .post(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
-            let user = await getUserBySlug(req.body.userSlug);
-            if (user == [])
-                next(
-                    ApiError.badRequest(
-                        `User with url: ${req.body.userId} does not exists`,
-                        ""
-                    )
-                );
-            let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            await addMemberToCommittee(committee, user)
-                .then((msg) => {
-                    res.redirect(`/committees/${req.params.committeeSlug}/`);
-                })
-                .catch((err) => {
-                    next(err);
-                });
-        })
-        .put(authUser, async (req, res, next) => {
+        .post(
+            authUser,
+            authRole(ROLE.BOARD),
+            checkIfCommitteePageExists,
+            async (req, res, next) => {
+                let user = await getUserBySlug(req.body.userSlug);
+                if (user == [])
+                    return next(
+                        ApiError.badRequest(
+                            `User with url: ${req.body.userId} does not exists`
+                        )
+                    );
+                await addMemberToCommittee(req.committee, user)
+                    .then((msg) => {
+                        res.redirect(
+                            `/committees/${req.params.committeeSlug}/`
+                        );
+                    })
+                    .catch((err) => {
+                        next(err);
+                    });
+            }
+        )
+        .put(authUser, checkIfCommitteePageExists, async (req, res, next) => {
             let committee = await req.body;
             if (
                 !getCommitteeMemberPermission(committee.committeeName, req.user)
             )
-                next(ApiError.forbidden("You do not have acces to this page"));
+                return next(
+                    ApiError.forbidden("You do not have acces to this page")
+                );
             await updateMemberInCommittee(committee, req.user.userId)
                 .then((msg) => {
                     res.redirect(`/committees`);
@@ -178,18 +196,42 @@ module.exports = function (passport) {
                     next(err);
                 });
         })
-        .delete(authUser, authRole(ROLE.ADMIN), async (req, res, next) => {
-            let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            await deleteMemberInCommittee(
-                committee.committeeName,
-                req.query.user
-            )
-                .then((msg) => {
-                    res.redirect(`/committees`);
-                })
-                .catch((err) => {
-                    next(err);
-                });
-        });
+        .delete(
+            authUser,
+            authRole(ROLE.ADMIN),
+            checkIfCommitteePageExists,
+            async (req, res, next) => {
+                if (
+                    !getCommitteeMemberPermission(
+                        committee.committeeName,
+                        req.user
+                    )
+                )
+                    return next(
+                        ApiError.forbidden("You do not have acces to this page")
+                    );
+                await deleteMemberInCommittee(
+                    req.committee.committeeName,
+                    req.query.user
+                )
+                    .then((msg) => {
+                        res.redirect(`/committees`);
+                    })
+                    .catch((err) => {
+                        next(err);
+                    });
+            }
+        );
+
+    async function checkIfCommitteePageExists(req, res, next) {
+        req.committee = await getCommitteeBySlug(req.params.committeeSlug);
+        if (req.committee == null)
+            return next(
+                ApiError.badRequest(
+                    `The committee ${req.params.committeeSlug} does not exist`
+                )
+            );
+        return next();
+    }
     return router;
 };

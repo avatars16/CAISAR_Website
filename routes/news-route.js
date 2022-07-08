@@ -48,58 +48,60 @@ module.exports = function (passport) {
                 });
         });
 
-    router.route("/:newsItemSlug/").get(async (req, res, next) => {
-        try {
-            let newsItem = await getCalendarItemBySlug(req.params.newsItemSlug);
+    router
+        .route("/:newsItemSlug/")
+        .get(checkIfNewspageExists, async (req, res, next) => {
             res.render("news/view-news-item", {
-                calendarItem: newsItem,
+                calendarItem: req.newsItem,
                 user: req.user,
                 role: ROLE,
                 hasPermission: hasPermission,
                 signedInUser: req.isAuthenticated(),
             });
-        } catch (error) {
-            next(
-                ApiError.badRequest(
-                    `The calender item ${req.params.newsItemSlug} does not exist`,
-                    error
-                )
-            );
-        }
-    });
+        });
 
     router
-        .route("/:calendarItemSlug/edit")
-        .get(async (req, res) => {
-            let calendarItem = await getCalendarItemBySlug(
-                req.params.calendarItemSlug
-            );
+        .route("/:newsItemSlug/edit")
+        .get(checkIfNewspageExists, async (req, res) => {
             res.render("news/edit-news-item", {
-                calendarItem: calendarItem,
+                calendarItem: req.newsItem,
                 deletePermission: true,
             });
         })
-        .put(async (req, res, next) => {
-            await updateCalendarItem(req.body, req.params.calendarItemSlug)
+        .put(checkIfNewspageExists, async (req, res, next) => {
+            await updateCalendarItem(req.body, req.params.newsItemSlug)
                 .then((msg) => {
-                    res.redirect(`/news/${req.params.calendarItemSlug}`);
+                    res.redirect(`/news/${req.params.newsItemSlug}`);
                 })
                 .catch((err) => {
                     next(err);
                 });
         })
-        .delete(authUser, authRole(ROLE.ADMIN), async (req, res, next) => {
-            let calendarItem = await getCalendarItemBySlug(
-                req.params.calendarItemSlug
+        .delete(
+            checkIfNewspageExists,
+            authUser,
+            authRole(ROLE.ADMIN),
+            async (req, res, next) => {
+                await deleteCalendaritem(req.newsItem)
+                    .then((msg) => {
+                        res.redirect(`/news`);
+                    })
+                    .catch((err) => {
+                        next(err);
+                    });
+            }
+        );
+
+    async function checkIfNewspageExists(req, res, next) {
+        req.newsItem = await getCalendarItemBySlug(req.params.newsItemSlug);
+        if (req.newsItem == null)
+            return next(
+                ApiError.badRequest(
+                    `The news item ${req.params.newsItemSlug} does not exist`
+                )
             );
-            await deleteCalendaritem(calendarItem)
-                .then((msg) => {
-                    res.redirect(`/news`);
-                })
-                .catch((err) => {
-                    next(err);
-                });
-        });
+        return next();
+    }
 
     return router;
 };

@@ -7,14 +7,18 @@
     </tr>
     <% 
     let notShow = ["password","userId","createdAt", "websiteRole","numberOfLogins","lastLogin","profileViews"]
+    let privateDetails = ["email","phone","private"]
     for (let prop in user) {
         if(!notShow.includes(String(prop))){
+            console.log(prop)
+            if((!private && !privateDetails.includes(String(prop)))
+            || (hasEditPermission && privateDetails.includes(String(prop)))){
         %>
         <tr>
             <td><%= prop %></td>
             <td><%= user[prop] %></td>
         </tr>
-    <% } } %> 
+    <% } } }%> 
 </table>
 <%if(hasEditPermission) { %>
 <a href="/users/<%= user.userSlug %>/edit">edit user</a>

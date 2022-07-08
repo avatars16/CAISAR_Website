@@ -39,14 +39,13 @@ module.exports = function (passport) {
 
     router
         .route("/:userSlug/edit")
-        .get(authUser, async (req, res, next) => {
+        .get(authUser, checkIfUserPageExists, async (req, res, next) => {
             if (
                 req.user.userSlug == req.params.userSlug ||
                 hasPermission(req.user.websiteRole, ROLE.BOARD)
             ) {
-                let reqUser = await getUserBySlug(req.params.userSlug);
                 res.render("users/edit-user", {
-                    user: reqUser,
+                    user: req.requestedUser,
                     canDelete: hasPermission(req.user.websiteRole, ROLE.ADMIN),
                     changeWebsiteRole: true,
                     /*TODO: change back to this: hasPermission(req.user.websiteRole,ROLE.BOARD),*/
@@ -55,12 +54,16 @@ module.exports = function (passport) {
             }
             next(ApiError.forbidden("You don't have acces to this page"));
         })
-        .put(authUser, async (req, res, next) => {
+        .put(authUser, checkIfUserPageExists, async (req, res, next) => {
             if (
                 req.user.userSlug == req.params.userSlug ||
                 hasPermission(req.user.websiteRole, ROLE.BOARD)
             ) {
-                updateUser(req.body, req.user.userId, req.user.email)
+                updateUser(
+                    req.body,
+                    req.requestedUser.userId,
+                    req.requestedUser.email
+                )
                     .then((msg) => {
                         res.redirect(`/users/${req.params.userSlug}/`);
                     })
@@ -71,37 +74,41 @@ module.exports = function (passport) {
             }
             next(ApiError.forbidden("You don't have acces to this page"));
         })
-        .delete(authUser, authRole(ROLE.ADMIN), async (req, res, next) => {
-            let deleteThisUser = await getUserBySlug(req.params.userSlug);
-            if (deleteThisUser.userId == req.user.userId)
-                return next(
-                    ApiError.badRequest(
-                        "It is not possible to delete your own account"
-                    )
-                );
-            if (hasPermission(deleteThisUser.websiteRole, ROLE.BOARD))
-                return next(
-                    ApiError.badRequest(
-                        `It is not possible to delete a ${deleteThisUser.websiteRole} account`
-                    )
-                );
-            deleteUser(deleteThisUser)
-                .then((msg) => {
-                    res.redirect(`/users/`);
-                })
-                .catch((err) => next(err));
-        });
+        .delete(
+            authUser,
+            authRole(ROLE.ADMIN),
+            checkIfUserPageExists,
+            async (req, res, next) => {
+                if (req.requestedUser.userId == req.user.userId)
+                    return next(
+                        ApiError.badRequest(
+                            "It is not possible to delete your own account"
+                        )
+                    );
+                if (hasPermission(req.requestedUser.websiteRole, ROLE.BOARD))
+                    return next(
+                        ApiError.badRequest(
+                            `It is not possible to delete a ${req.requestedUser.websiteRole} account`
+                        )
+                    );
+                deleteUser(req.requestedUser)
+                    .then((msg) => {
+                        res.redirect(`/users/`);
+                    })
+                    .catch((err) => next(err));
+            }
+        );
 
-    router.route("/:userSlug/").get(authUser, async (req, res, next) => {
-        try {
-            requestedUser = await getUserBySlug(req.params.userSlug);
+    router
+        .route("/:userSlug/")
+        .get(authUser, checkIfUserPageExists, async (req, res, next) => {
             let committees = await getDataFromMultipleTables(
                 "users",
                 "committees",
                 "userId",
                 "userId",
                 {
-                    "users.userId": requestedUser.userId,
+                    "users.userId": req.requestedUser.userId,
                     committeeType: COMMITTEETYPE.COMMITTEE,
                 }
             );
@@ -118,21 +125,26 @@ module.exports = function (passport) {
                 list.push(await getCommitteeByName(committee.committeeName));
             }
             res.render("users/view-user", {
-                user: requestedUser,
+                user: req.requestedUser,
                 committees: list,
                 batch: userBatch,
+                private: req.user.private,
                 hasEditPermission:
                     req.user.userSlug == req.params.userSlug ||
                     hasPermission(req.user.websiteRole, ROLE.BOARD),
             });
-        } catch (error) {
-            next(
+        });
+
+    async function checkIfUserPageExists(req, res, next) {
+        req.requestedUser = await getUserBySlug(req.params.userSlug);
+        if (req.requestedUser == null)
+            return next(
                 ApiError.internal(
                     `User with url: ${req.params.userSlug} does not exist`
                 )
             );
-        }
-    });
+        return next();
+    }
 
     return router;
 };

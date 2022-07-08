@@ -24,6 +24,7 @@ function notAuthUser(req, res, next) {
 
 function authRole(neededRole) {
     return (req, res, next) => {
+        console.log("test");
         if (!hasPermission(req.user.websiteRole, neededRole)) {
             next(ApiError.forbidden("You do not have the permissions"));
             return;
@@ -51,7 +52,7 @@ async function getCommitteeMemberPermission(committeeName, user) {
     if (user == null) return false;
     let memberRole = COMMITTEEROLE.MEMBER;
     possibleMemberRole = await getMemberRoleInCommittee(
-        committee.committeeName,
+        committeeName,
         user.userId
     );
     if (possibleMemberRole) memberRole = possibleMemberRole;

@@ -4,14 +4,14 @@ async function createUserTable(req, res) {
     let names =
         "firstName VARCHAR(255) NOT NULL, middleName VARCHAR(255), lastName VARCHAR(255) NOT NULL, ";
     let credential =
-        "email VARCHAR(255) NOT NULL, password text NOT NULL, userSlug VARCHAR(255) NOT NULL, ";
+        "email VARCHAR(255) NOT NULL, password text NOT NULL, private BOOL DEFAULT false, userSlug VARCHAR(255) NOT NULL, ";
     let personal = "userPhone int NOT NULL, ";
     let statistics =
         "createdAt DATE DEFAULT CURRENT_DATE(),lastLogin DATE DEFAULT CURRENT_DATE(), numberOfLogins int DEFAULT 0, profileViews int DEFAULT 0, ";
     let sql =
         "CREATE TABLE users(userId int AUTO_INCREMENT, birthday DATE, websiteRole VARCHAR(255) DEFAULT 'user', " +
         names +
-        phones +
+        personal +
         credential +
         statistics +
         "  PRIMARY KEY(userId)) ";
