@@ -14,6 +14,7 @@ const {
     getCalendarItemBySlug,
     getAllCalendarItems,
     updateCalendarItem,
+    emptyCalendarItem,
 } = require("../controllers/calendar-api");
 
 module.exports = function (passport) {
@@ -28,13 +29,15 @@ module.exports = function (passport) {
     //TODO: add authentication check
     router
         .route("/new")
-        .get(async (req, res, next) => {
-            res.render("calendar/newCalendarItem");
+        .get(authUser, async (req, res, next) => {
+            res.render("calendar/newCalendarItem", {
+                calendarItem: emptyCalendarItem(),
+            });
             return;
         })
-        .post(async (req, res, next) => {
+        .post(authUser, async (req, res, next) => {
             let calendarItem = await req.body;
-            await newCalendarItem(calendarItem)
+            await newCalendarItem(calendarItem, req.user)
                 .then((msg) => {
                     res.redirect(`/calendar`);
                     return;
@@ -72,24 +75,13 @@ module.exports = function (passport) {
             let calendarItem = await getCalendarItemBySlug(
                 req.params.calendarItemSlug
             );
-            let currentUser = req.user;
             res.render("calendar/editCalendarItem", {
                 calendarItem: calendarItem,
-                checkAuth: hasRole,
-                role: ROLE,
-                user: currentUser,
+                deletePermission: true,
             });
         })
         .put(async (req, res, next) => {
-            let committee = req.body;
-            let oldName = await getCalendarItemBySlug(
-                req.params.calendarItemSlug
-            );
-            await updateCalendarItem(
-                committee,
-                req.params.committeeSlug,
-                oldName.committeeName
-            )
+            await updateCalendarItem(req.body, req.params.calendarItemSlug)
                 .then((msg) => {
                     res.redirect(`/calendar/${req.params.calendarItemSlug}`);
                 })

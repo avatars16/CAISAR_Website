@@ -1,6 +1,3 @@
-const bcrypt = require("bcrypt");
-const passport = require("passport");
-const db_generic = require("../database/db_generic");
 const {
     updateRow,
     addNewRow,
@@ -15,7 +12,8 @@ const slugify = require("slugify");
 const ApiError = require("../error/data-errors");
 const data = require("./data");
 const { search } = require("../routes");
-const { createPool } = require("mysql");
+
+//TODO: Clean up this code, its a mess.
 
 function emptyCommittee() {
     return {
@@ -133,9 +131,8 @@ function deleteCommittee(committeeName) {
     });
 }
 
-function addMemberToCommittee(committeeSlug, user) {
+function addMemberToCommittee(committee, user) {
     return new Promise(async (resolve, reject) => {
-        committee = await getCommitteeBySlug(committeeSlug);
         if (!committee)
             return reject(
                 ApiError.badRequest("This committee does not exists")
@@ -145,9 +142,15 @@ function addMemberToCommittee(committeeSlug, user) {
             committeeName: committee.committeeName,
             memberRole: "member",
             userId: user.userId,
-            committeeSlug: committeeSlug,
+            committeeSlug: committee.committeeSlug,
+            committeeType: committee.committeeType,
         };
-        if ((await getMemberRoleInCommittee(committee, user.userId)) == null)
+        if (
+            (await getMemberRoleInCommittee(
+                committee.committeeName,
+                user.userId
+            )) != null
+        )
             return reject(
                 ApiError.badRequest(
                     `${user.firstName} is already a member of ${committee.committeeName}`,
@@ -202,16 +205,9 @@ async function getMemberRoleInCommittee(committeeName, memberId) {
     return data[0];
 }
 
-function getAllCommitteeMembersByCommitteeName(committeeName) {
-    return new Promise(async (resolve, reject) => {
-        let data = await getSpecificRows("committees", "*", {
-            committeeName: committeeName,
-        });
-        if (data instanceof ApiError) {
-            return reject(data);
-        }
-        return resolve(data);
-    });
+async function getAllCommitteesOfType(committeeType) {
+    let filter = { committeeType: committeeType };
+    return await getAllCommitteeRows(filter);
 }
 
 async function getAllCommitteeRows(jsonQueryObject) {
@@ -270,4 +266,5 @@ module.exports = {
     getCommitteeBySlug,
     getMemberRoleInCommittee,
     getCommitteeByName,
+    getAllCommitteesOfType,
 };

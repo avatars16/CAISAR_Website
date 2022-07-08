@@ -6,7 +6,7 @@
         <th>Value</th>
     </tr>
     <% 
-    let notShow = ["password","userId","createdAt", "websiteRole"]
+    let notShow = ["password","userId","createdAt", "websiteRole","numberOfLogins","lastLogin","profileViews"]
     for (let prop in user) {
         if(!notShow.includes(String(prop))){
         %>
@@ -15,6 +15,29 @@
             <td><%= user[prop] %></td>
         </tr>
     <% } } %> 
+</table>
+<br>
+<h1>Lichting</h1>
+<a href="/committees/<%=batch[0].committeeSlug%>/"><h2><%=batch[0].committeeName%></h2></a>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>User url</th>
+        <th>Member since</th>
+    </tr>
+    <% 
+    for (let member of batch) {
+        %>
+        <tr>
+            <% if(user.middleName){%>
+                <td><%= user.firstName + ' '+  user.middleName +' '+  user.lastName %></td>
+            <%} else {%> 
+                <td><%= user.firstName + ' '+  user.lastName %></td>
+            <%}%>
+            <td><a href="/committees/<%= member.userSlug%>/"><%=  member.userSlug%></a></td>
+            <td><%= member.startDate.toLocaleDateString()%></td>   
+        </tr>
+    <% }%> 
 </table>
 <br>
 <h1>Committees</h1>

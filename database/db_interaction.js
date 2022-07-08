@@ -42,7 +42,7 @@ async function getAllRows(table, selectValues) {
             return result;
         })
         .catch((err) => {
-            return ApiError.internal("could not handle this query");
+            return ApiError.internal("could not handle this query", err);
         });
 }
 
@@ -55,7 +55,7 @@ async function getSpecificRows(table, selectValues, filter) {
             return result;
         })
         .catch((err) => {
-            return ApiError.internal("could not handle this query");
+            return ApiError.internal("could not handle this query", err);
         });
 }
 
@@ -77,18 +77,22 @@ async function getDataFromMultipleTables(
     columnid2,
     filter
 ) {
+    let whereStmt = getPrepareStmt(filter);
     let sql = `SELECT * 
     FROM ${table1}
     INNER JOIN ${table2}
     ON ${table1}.${columnid1} = ${table2}.${columnid2}
-    WHERE ?`;
+    WHERE ${whereStmt[0]}`;
     return await db_generic
-        .dbQuery(sql, filter)
+        .dbQuery(sql, whereStmt[1])
         .then((result) => {
             return result;
         })
         .catch((err) => {
-            return ApiError.internal("could not handle this query");
+            return ApiError.internal(
+                "could not handle this query",
+                (error = err)
+            );
         });
 }
 

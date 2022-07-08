@@ -1,0 +1,24 @@
+<% let notShow = ["calendarId","createdBy","calendarSlug", "itemHTML","itemViews"]
+for (let prop in calendarItem) {
+    if(!notShow.includes(String(prop))){ %>
+<fieldset>
+    <label for="<%= prop %>"> 
+        <%
+        var rowName = prop.replace(/([A-Z])/g, " $1");
+        var finalRowName = rowName.charAt(0).toLowerCase() + rowName.slice(1)
+        %>
+        <%= finalRowName%>
+    </label>
+    <%if(prop == "startDate" || prop == "endDate" || prop == "signupDate" || prop == "signoutDate"){
+        let dateValue = calendarItem[prop]
+        if(dateValue != null) {dateValue = dateValue.toISOString().split("T")[0]} 
+        %>
+        <input type="datetime-local" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop]%>">
+    <%}else if (prop == "itemMarkdown"){%>
+        <textarea name= "<%= prop %>" id=" <%= prop %>">  <%=calendarItem[prop] %> </textarea>
+    <%}else{%>
+        <input type="text" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop] %>">
+    <%}%>
+    
+</fieldset>
+<% } } %> 

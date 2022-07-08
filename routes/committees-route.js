@@ -6,7 +6,7 @@ const {
     hasPermission,
     getCommitteeMemberPermission,
 } = require("../permissions/basicAuth");
-const { ROLE, COMMITTEEROLE } = require("../controllers/data");
+const { ROLE, COMMITTEEROLE, COMMITTEETYPE } = require("../controllers/data");
 const ApiError = require("../error/data-errors");
 const { getUserBySlug } = require("../controllers/users-api");
 const {
@@ -19,14 +19,17 @@ const {
     updateMemberInCommittee,
     deleteMemberInCommittee,
     emptyCommittee,
+    getAllCommitteesOfType,
 } = require("../controllers/committees-api");
 const { getDataFromMultipleTables } = require("../database/db_interaction");
 
 module.exports = function (passport) {
     router.route("/").get(async (req, res) => {
-        let committees = await getAllCommittees();
+        let committees = await getAllCommitteesOfType(COMMITTEETYPE.COMMITTEE);
+        let batches = await getAllCommitteesOfType(COMMITTEETYPE.BATCH);
         res.render("committees/allCommittees", {
             committees,
+            batches,
             signedInUser: req.isAuthenticated(),
         });
     });
@@ -148,7 +151,7 @@ module.exports = function (passport) {
                     )
                 );
             let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            await addMemberToCommittee(committee.committeeSlug, user)
+            await addMemberToCommittee(committee, user)
                 .then((msg) => {
                     res.redirect(`/committees/${req.params.committeeSlug}/`);
                 })

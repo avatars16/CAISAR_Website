@@ -1,6 +1,8 @@
 <br>
 <h1>Register</h1>
 <form action="/calendar/new" method="post">
+    <%- include("./_editItemForm") %>
+    <!--
     <fieldset>
         <label for="itemTitle">item title</label>
         <input type="text" name="itemTitle" id="itemTitle" value="Title">
@@ -37,6 +39,7 @@
         <label for="signoutDate">End date</label>
         <input type="date" name="signoutDate" id="signoutDate">
     </fieldset>
+-->
     <button type="submit">add calendar item</button>
 </form>
 <br>

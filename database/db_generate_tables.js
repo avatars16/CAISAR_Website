@@ -5,11 +5,13 @@ async function createUserTable(req, res) {
         "firstName VARCHAR(255) NOT NULL, middleName VARCHAR(255), lastName VARCHAR(255) NOT NULL, ";
     let credential =
         "email VARCHAR(255) NOT NULL, password text NOT NULL, userSlug VARCHAR(255) NOT NULL, ";
+    let personal = "userPhone int NOT NULL, ";
     let statistics =
         "createdAt DATE DEFAULT CURRENT_DATE(),lastLogin DATE DEFAULT CURRENT_DATE(), numberOfLogins int DEFAULT 0, profileViews int DEFAULT 0, ";
     let sql =
         "CREATE TABLE users(userId int AUTO_INCREMENT, birthday DATE, websiteRole VARCHAR(255) DEFAULT 'user', " +
         names +
+        phones +
         credential +
         statistics +
         "  PRIMARY KEY(userId)) ";
@@ -40,16 +42,17 @@ async function createCommitteeTable(req, res) {
 }
 
 async function createCalenderTable(req, res) {
+    //TODO: add not null to dates
     let dates =
-        "startDate DATE, startTime TIME, endDate DATE, endTime TIME, signupDate DATE, signOutDate DATE,";
+        "startDate DATETIME, endDate DATETIME, signupDate DATETIME, signoutDate DATETIME,";
     let texts =
         "itemTitle VARCHAR(255) NOT NULL, itemDescription TEXT NOT NULL, itemMarkdown TEXT NOT NULL, itemHTML TEXT NOT NULL,";
     let statistics =
-        "calendarSlug VARCHAR(255), createdBy int, views int DEFAULT 0,";
+        "calendarSlug VARCHAR(255) NOT NULL, createdBy int NOT NULL, itemViews int DEFAULT 0,";
     let sql =
         "CREATE TABLE calendar(calendarId int AUTO_INCREMENT," +
-        dates +
         texts +
+        +dates +
         statistics +
         "PRIMARY KEY(calendarId), FOREIGN KEY (createdBy) REFERENCES users(userId))";
     db = getConn();

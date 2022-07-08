@@ -33,7 +33,6 @@ function authRole(neededRole) {
 }
 
 function hasPermission(userRole, neededRole) {
-    console.log("permission", userRole, neededRole);
     if (userRole == neededRole) return true;
     if (userRole == ROLE.ADMIN) return true;
     if (

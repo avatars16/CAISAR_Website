@@ -6,7 +6,7 @@ const {
     authRole,
     hasPermission,
 } = require("../permissions/basicAuth");
-const { ROLE } = require("../controllers/data");
+const { ROLE, COMMITTEETYPE } = require("../controllers/data");
 const ApiError = require("../error/data-errors");
 const {
     getUserBySlug,
@@ -100,7 +100,18 @@ module.exports = function (passport) {
                 "committees",
                 "userId",
                 "userId",
-                { "users.userId": requestedUser.userId }
+                {
+                    "users.userId": requestedUser.userId,
+                    committeeType: COMMITTEETYPE.COMMITTEE,
+                }
+            );
+            console.info(committees);
+            let userBatch = await getDataFromMultipleTables(
+                "users",
+                "committees",
+                "userId",
+                "userId",
+                { committeeType: COMMITTEETYPE.BATCH }
             );
             let list = [];
             for (let committee of committees) {
@@ -109,6 +120,7 @@ module.exports = function (passport) {
             res.render("users/userProfile", {
                 user: requestedUser,
                 committees: list,
+                batch: userBatch,
                 editPermission:
                     req.user.userSlug == req.params.userSlug ||
                     hasPermission(req.user.websiteRole, ROLE.BOARD),

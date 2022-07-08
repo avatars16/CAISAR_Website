@@ -1,30 +1,10 @@
 <br>
 <h1>Edit committee: <%= calendarItem.itemTitle%></h1>
 <form action="/calendar/<%=calendarItem.calendarSlug %>/edit?_method=PUT" method="post">
-    <% let notShow = ["calendarId","createdBy","calendarSlug", "itemHTML"]
-        for (let prop in calendarItem) {
-            if(!notShow.includes(String(prop))){ %>
-        <fieldset>
-            <label for="<%= prop %>"> 
-                <%
-                var rowName = prop.replace(/([A-Z])/g, " $1");
-                var finalRowName = rowName.charAt(0).toLowerCase() + rowName.slice(1)
-                %>
-                <%= finalRowName%>
-            </label>
-            <%if(prop == "startDate" || prop == "endDate" || prop == "signupDate" || prop == "signOutDate"){%>
-                <input type="date" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop].toISOString().split("T")[0] %>">
-            <%}else if (prop == "startTime" || prop == "endTime"){%>
-                <input type="time" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop] %>">
-            <%}else{%>
-                <input type="text" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop] %>">
-            <%}%>
-            
-        </fieldset>
-    <% } } %> 
+    <%- include("./_editItemForm") %>
     <button type="submit">Change</button>
 </form>
-<% if(checkAuth(user.websiteRole, role.ADMIN)) {%>
+<% if(deletePermission) {%>
 <form action="/committees/<%=calendarItem.calendarSlug %>/edit?_method=DELETE" method="post">
     <button type="submit">Delete</button>
     </form>

@@ -15,7 +15,19 @@ const {
 } = require("../database/db_interaction");
 const helper = require("./helper-functions");
 
-async function newCalendarItem(calendarItem) {
+function emptyCalendarItem() {
+    return {
+        itemTitle: "",
+        itemDescription: "",
+        itemMarkdown: "",
+        startDate: undefined,
+        endDate: undefined,
+        signupDate: undefined,
+        signoutDate: undefined,
+    };
+}
+
+async function newCalendarItem(calendarItem, user) {
     return new Promise(async (resolve, reject) => {
         let newCalendarItem = helper.deleteEmptyFields(calendarItem);
         //TODO: add more field checks
@@ -25,26 +37,36 @@ async function newCalendarItem(calendarItem) {
             return reject(ApiError.badRequest("Description is required"));
         if (!calendarItem.itemMarkdown)
             return reject(ApiError.badRequest("Markdown is required"));
+        //if (!calendarItem.startDate)
+        //    return reject(ApiError.badRequest("Start date is required"));
+        //if (!calendarItem.endDate)
+        //   return reject(ApiError.badRequest("End dateis required"));
+        if (calendarItem.signupDate == null)
+            calendarItem.signupDate = calendarItem.startDate;
+        if (calendarItem.signoutDate == null)
+            calendarItem.signoutDate = calendarItem.startDate;
         newCalendarItem.calendarSlug = await createCalendarItemSlug(
             newCalendarItem.itemTitle
         );
         newCalendarItem.itemHTML = dompurify.sanitize(
             marked.parse(newCalendarItem.itemMarkdown)
         );
+        newCalendarItem.createdBy = user.userId;
         let err = await addNewRow("calendar", newCalendarItem);
         if (err instanceof ApiError) return reject(err);
         return resolve("committee created");
     });
 }
 
-function updateCalendarItem(calendarItem) {
+function updateCalendarItem(calendarItem, calendarSlug) {
     return new Promise(async (resolve, reject) => {
         helper.deleteEmptyFields(calendarItem);
         calendarItem.itemHTML = dompurify.sanitize(
             marked.parse(calendarItem.itemMarkdown)
         );
+        console.info(calendarItem);
         err = await updateRow("calendar", calendarItem, {
-            calendarSlug: calendarItem.calendarSlug,
+            calendarSlug: calendarSlug,
         });
         if (err instanceof ApiError) return reject(err);
         return resolve("calendar item updated!");
@@ -87,6 +109,7 @@ async function createCalendarItemSlug(name) {
 }
 
 module.exports = {
+    emptyCalendarItem,
     newCalendarItem,
     updateCalendarItem,
     getCalendarItemBySlug,

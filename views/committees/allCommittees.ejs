@@ -1,6 +1,26 @@
 <br>
-<h1>All committees</h1>
+<h1>All lichtingen</h1>
+<label for="search">Search:</label>
+<input type="search" name="search" id="search" onkeyup="sendData(this)">
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Value</th>
+    </tr>
+    <% 
+    for (batch of batches){
+        if(batch.memberRole == null){
+        %>
+        <tr>
+            <td><%= batch.committeeName%></td>
+            <td> <a href="/committees/<%= batch.committeeSlug %>/"><%= batch.committeeSlug %></a></td>
+        </tr>
+    <% }}%> 
+</table>
 
+
+<br>
+<h1>All committees</h1>
 <label for="search">Search:</label>
 <input type="search" name="search" id="search" onkeyup="sendData(this)">
 <table>
@@ -10,7 +30,7 @@
     </tr>
     <% 
     for (committee of committees){
-        if(!committee.memberRole){
+        if(committee.memberRole == null){
         %>
         <tr>
             <td><%= committee.committeeName%></td>
@@ -18,6 +38,5 @@
         </tr>
     <% }}%> 
 </table>
-<br>
 <br>
 <%#<script src="js/searchengine.js"></script>%>

@@ -9,4 +9,13 @@ const COMMITTEEROLE = {
     MEMBER: "member",
 };
 
-module.exports = { ROLE: ROLE, COMMITTEEROLE: COMMITTEEROLE };
+const COMMITTEETYPE = {
+    COMMITTEE: "committee",
+    BATCH: "batch",
+};
+
+module.exports = {
+    ROLE: ROLE,
+    COMMITTEEROLE: COMMITTEEROLE,
+    COMMITTEETYPE: COMMITTEETYPE,
+};
