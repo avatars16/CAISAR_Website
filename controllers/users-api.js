@@ -1,6 +1,4 @@
 const bcrypt = require("bcrypt");
-const passport = require("passport");
-const db_generic = require("../database/db_generic");
 const {
     updateRow,
     addNewRow,
@@ -12,9 +10,7 @@ const {
 const helper = require("./helper-functions");
 const slugify = require("slugify");
 const ApiError = require("../error/data-errors");
-const apiErrorHandler = require("../error/error-handler");
 const data = require("./data");
-const { search } = require("../routes");
 
 async function createUser(newUser) {
     const hashedPassword = await bcrypt.hash(newUser.password, 10);
@@ -34,6 +30,8 @@ async function saveUser(newUser) {
 }
 function updateUser(user, userId, oldEmail) {
     return new Promise(async (resolve, reject) => {
+        //TODO: Add that board members can not promote to admins
+        //TODO: Add that there has to be one admin minimum
         helper.deleteEmptyFields(user);
         if (user.password) user.password = await bcrypt.hash(user.password, 10);
         if (

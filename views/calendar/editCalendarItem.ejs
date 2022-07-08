@@ -13,7 +13,7 @@
                 <%= finalRowName%>
             </label>
             <%if(prop == "startDate" || prop == "endDate" || prop == "signupDate" || prop == "signOutDate"){%>
-                <input type="date" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop] %>">
+                <input type="date" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop].toISOString().split("T")[0] %>">
             <%}else if (prop == "startTime" || prop == "endTime"){%>
                 <input type="time" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop] %>">
             <%}else{%>

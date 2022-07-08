@@ -6,9 +6,9 @@ async function createUserTable(req, res) {
     let credential =
         "email VARCHAR(255) NOT NULL, password text NOT NULL, userSlug VARCHAR(255) NOT NULL, ";
     let statistics =
-        "lastLogin DATE DEFAULT CURRENT_DATE(), numberOfLogins int DEFAULT 0, profileViews int DEFAULT 0, ";
+        "createdAt DATE DEFAULT CURRENT_DATE(),lastLogin DATE DEFAULT CURRENT_DATE(), numberOfLogins int DEFAULT 0, profileViews int DEFAULT 0, ";
     let sql =
-        "CREATE TABLE users(userId int AUTO_INCREMENT, createdAt DATE DEFAULT CURRENT_DATE(), birthday DATE, websiteRole VARCHAR(255) DEFAULT 'user', " +
+        "CREATE TABLE users(userId int AUTO_INCREMENT, birthday DATE, websiteRole VARCHAR(255) DEFAULT 'user', " +
         names +
         credential +
         statistics +
@@ -28,8 +28,8 @@ async function createCommitteeTable(req, res) {
         "committeeParent VARCHAR(255), committeeType VARCHAR(255) NOT NULL,";
     let sql =
         "CREATE TABLE committees(committeeId int AUTO_INCREMENT, userId int, memberRole VARCHAR(255)," +
-        date +
         name +
+        date +
         committeeSpecifics +
         "  PRIMARY KEY(committeeId), FOREIGN KEY (userId) REFERENCES users(userId))";
     db = getConn();
@@ -51,7 +51,7 @@ async function createCalenderTable(req, res) {
         dates +
         texts +
         statistics +
-        "  PRIMARY KEY(calendarId), FOREIGN KEY (createdBy) REFERENCES users(userId))";
+        "PRIMARY KEY(calendarId), FOREIGN KEY (createdBy) REFERENCES users(userId))";
     db = getConn();
     db.query(sql, (err, result) => {
         if (err) throw err;

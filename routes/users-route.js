@@ -48,6 +48,8 @@ module.exports = function (passport) {
                 res.render("users/userEdit", {
                     user: reqUser,
                     canDelete: hasPermission(req.user.websiteRole, ROLE.ADMIN),
+                    changeWebsiteRole: true,
+                    /*TODO: change back to this: hasPermission(req.user.websiteRole,ROLE.BOARD),*/
                 });
                 return;
             }

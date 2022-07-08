@@ -17,6 +17,16 @@ const data = require("./data");
 const { search } = require("../routes");
 const { createPool } = require("mysql");
 
+function emptyCommittee() {
+    return {
+        committeeName: "",
+        committeeType: "",
+        committeeParent: "",
+        startDate: undefined,
+        endDate: undefined,
+    };
+}
+
 async function newCommittee(name, committee) {
     return new Promise(async (resolve, reject) => {
         if (!name) return reject(ApiError.badRequest("Name is required"));
@@ -249,6 +259,7 @@ async function searchCommittee(searchItem) {
     });
 }
 module.exports = {
+    emptyCommittee,
     newCommittee,
     updateCommittee,
     deleteCommittee,

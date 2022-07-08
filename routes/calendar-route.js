@@ -68,7 +68,7 @@ module.exports = function (passport) {
 
     router
         .route("/:calendarItemSlug/edit")
-        .get(authUser, authRole(ROLE.BOARD), async (req, res) => {
+        .get(async (req, res) => {
             let calendarItem = await getCalendarItemBySlug(
                 req.params.calendarItemSlug
             );
@@ -80,7 +80,7 @@ module.exports = function (passport) {
                 user: currentUser,
             });
         })
-        .put(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
+        .put(async (req, res, next) => {
             let committee = req.body;
             let oldName = await getCalendarItemBySlug(
                 req.params.calendarItemSlug

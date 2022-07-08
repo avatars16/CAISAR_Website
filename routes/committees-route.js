@@ -18,6 +18,7 @@ const {
     addMemberToCommittee,
     updateMemberInCommittee,
     deleteMemberInCommittee,
+    emptyCommittee,
 } = require("../controllers/committees-api");
 const { getDataFromMultipleTables } = require("../database/db_interaction");
 
@@ -34,7 +35,9 @@ module.exports = function (passport) {
     router
         .route("/new")
         .get(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
-            res.render("committees/newCommittee");
+            res.render("committees/newCommittee", {
+                committee: emptyCommittee(),
+            });
             return;
         })
         .post(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
