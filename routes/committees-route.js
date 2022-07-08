@@ -27,7 +27,7 @@ module.exports = function (passport) {
     router.route("/").get(async (req, res) => {
         let committees = await getAllCommitteesOfType(COMMITTEETYPE.COMMITTEE);
         let batches = await getAllCommitteesOfType(COMMITTEETYPE.BATCH);
-        res.render("committees/allCommittees", {
+        res.render("committees/all-committees", {
             committees,
             batches,
             signedInUser: req.isAuthenticated(),
@@ -38,7 +38,7 @@ module.exports = function (passport) {
     router
         .route("/new")
         .get(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
-            res.render("committees/newCommittee", {
+            res.render("committees/new-committee", {
                 committee: emptyCommittee(),
             });
             return;
@@ -71,11 +71,14 @@ module.exports = function (passport) {
             "userId",
             { committeeName: committee.committeeName }
         );
-        res.render("committees/committeeOverview", {
+        res.render("committees/view-committee", {
             committee: committee,
             committeeMembers: committeeMembers,
             user: req.user,
-            hasEditPermission: getCommitteeMemberPermission(req.user),
+            hasEditPermission: getCommitteeMemberPermission(
+                committee.committeeName,
+                req.user
+            ),
         });
     });
 
@@ -83,7 +86,7 @@ module.exports = function (passport) {
         .route("/:committeeSlug/edit")
         .get(authUser, authRole(ROLE.BOARD), async (req, res) => {
             let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            res.render("committees/committeeEdit", {
+            res.render("committees/edit-committee", {
                 committee: committee,
                 deletePermission: hasPermission(
                     req.user.websiteRole,
@@ -128,11 +131,13 @@ module.exports = function (passport) {
                 "userId",
                 { committeeName: committee.committeeName }
             );
-            if (!getCommitteeMemberPermission(req.user))
+            if (
+                !getCommitteeMemberPermission(committee.committeeName, req.user)
+            )
                 return next(
                     ApiError.forbidden("You do not have acces to this page")
                 );
-            res.render("committees/committeeMembersEdit", {
+            res.render("committees/edit-committee-members", {
                 committee: committee,
                 committeeMembers: committeeMembers,
                 deletePermission: hasPermission(
@@ -161,7 +166,9 @@ module.exports = function (passport) {
         })
         .put(authUser, async (req, res, next) => {
             let committee = await req.body;
-            if (!getCommitteeMemberPermission(req.user))
+            if (
+                !getCommitteeMemberPermission(committee.committeeName, req.user)
+            )
                 next(ApiError.forbidden("You do not have acces to this page"));
             await updateMemberInCommittee(committee, req.user.userId)
                 .then((msg) => {

@@ -47,7 +47,7 @@ function hasPermission(userRole, neededRole) {
     return false;
 }
 
-async function getCommitteeMemberPermission(user) {
+async function getCommitteeMemberPermission(committeeName, user) {
     if (user == null) return false;
     let memberRole = COMMITTEEROLE.MEMBER;
     possibleMemberRole = await getMemberRoleInCommittee(

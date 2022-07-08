@@ -18,7 +18,7 @@ function apiErrorHandler(err, req, res, next) {
             path = req.hostname + err.url;
         }
         if (err.redirect) {
-            return res.redirect(goToUrl);
+            return res.redirect(path);
         }
 
         res.render("errors/basic-error-page", {

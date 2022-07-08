@@ -12,6 +12,17 @@ const slugify = require("slugify");
 const ApiError = require("../error/data-errors");
 const data = require("./data");
 
+function userObject() {
+    return {
+        firstName: "test",
+        middleName: undefined,
+        lastName: "test",
+        birthday: undefined,
+        email: "test@test.com",
+        password: undefined,
+        websiteRole: undefined,
+    };
+}
 async function createUser(newUser) {
     const hashedPassword = await bcrypt.hash(newUser.password, 10);
     helper.deleteEmptyFields(newUser);
@@ -148,6 +159,7 @@ async function searchUser(getColumns, filter, n) {
     });
 }
 module.exports = {
+    userObject,
     createUser,
     saveUser,
     checkIfUserExists,

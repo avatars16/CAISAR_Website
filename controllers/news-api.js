@@ -17,9 +17,9 @@ const helper = require("./helper-functions");
 
 function emptyCalendarItem() {
     return {
-        itemTitle: "",
-        itemDescription: "",
-        itemMarkdown: "",
+        itemTitle: "Title",
+        itemDescription: "Description",
+        itemMarkdown: "markdown \n### yeaaa boy",
         startDate: undefined,
         endDate: undefined,
         signupDate: undefined,
@@ -73,6 +73,16 @@ function updateCalendarItem(calendarItem, calendarSlug) {
     });
 }
 
+function deleteCalendaritem(calendarItem) {
+    return new Promise(async (resolve, reject) => {
+        err = await deleteRow("calendar", {
+            calendarSlug: calendarItem.calendarSlug,
+        });
+        if (err instanceof ApiError) return reject(err);
+        return resolve("item updated!");
+    });
+}
+
 async function getCalendarItemBySlug(calendarSlug) {
     return await getCalenderItem({ calendarSlug: calendarSlug });
 }
@@ -112,6 +122,7 @@ module.exports = {
     emptyCalendarItem,
     newCalendarItem,
     updateCalendarItem,
+    deleteCalendaritem,
     getCalendarItemBySlug,
     getAllCalendarItems,
 };

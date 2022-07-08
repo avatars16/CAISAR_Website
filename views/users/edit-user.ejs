@@ -1,7 +1,7 @@
 <br>
 <h1>Edit user: <%- user.firstName%></h1>
 <form action="/users/<%=user.userSlug%>/edit?_method=PUT" method="post">
-    <%- include("./_form.ejs")%>
+    <%- include("./_user-edit-form.ejs")%>
     <% if(changeWebsiteRole){%>
         <fieldset>
             <label for= "websiteRole" > Website role </label>

@@ -16,6 +16,9 @@
         </tr>
     <% } } %> 
 </table>
+<%if(hasEditPermission) { %>
+<a href="/users/<%= user.userSlug %>/edit">edit user</a>
+<%}%>
 <br>
 <h1>Lichting</h1>
 <a href="/committees/<%=batch[0].committeeSlug%>/"><h2><%=batch[0].committeeName%></h2></a>

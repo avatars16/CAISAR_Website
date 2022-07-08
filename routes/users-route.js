@@ -21,7 +21,7 @@ const { getCommitteeByName } = require("../controllers/committees-api");
 module.exports = function (passport) {
     router.route("/").get(authUser, async (req, res) => {
         let allUsers = await getAllUsers();
-        res.render("users/allUsers", { users: allUsers });
+        res.render("users/all-users", { users: allUsers });
     });
 
     router.post("/search", authUser, async (req, res, next) => {
@@ -45,7 +45,7 @@ module.exports = function (passport) {
                 hasPermission(req.user.websiteRole, ROLE.BOARD)
             ) {
                 let reqUser = await getUserBySlug(req.params.userSlug);
-                res.render("users/userEdit", {
+                res.render("users/edit-user", {
                     user: reqUser,
                     canDelete: hasPermission(req.user.websiteRole, ROLE.ADMIN),
                     changeWebsiteRole: true,
@@ -117,11 +117,11 @@ module.exports = function (passport) {
             for (let committee of committees) {
                 list.push(await getCommitteeByName(committee.committeeName));
             }
-            res.render("users/userProfile", {
+            res.render("users/view-user", {
                 user: requestedUser,
                 committees: list,
                 batch: userBatch,
-                editPermission:
+                hasEditPermission:
                     req.user.userSlug == req.params.userSlug ||
                     hasPermission(req.user.websiteRole, ROLE.BOARD),
             });

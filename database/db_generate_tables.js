@@ -52,7 +52,7 @@ async function createCalenderTable(req, res) {
     let sql =
         "CREATE TABLE calendar(calendarId int AUTO_INCREMENT," +
         texts +
-        +dates +
+        dates +
         statistics +
         "PRIMARY KEY(calendarId), FOREIGN KEY (createdBy) REFERENCES users(userId))";
     db = getConn();

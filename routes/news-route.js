@@ -15,13 +15,14 @@ const {
     getAllCalendarItems,
     updateCalendarItem,
     emptyCalendarItem,
-} = require("../controllers/calendar-api");
+    deleteCalendaritem,
+} = require("../controllers/news-api");
 
 module.exports = function (passport) {
     router.route("/").get(async (req, res) => {
-        let calendarItems = await getAllCalendarItems();
-        res.render("calendar/allCalendarItems", {
-            calendarItems: calendarItems,
+        let newsItems = await getAllCalendarItems();
+        res.render("news/all-news-items", {
+            calendarItems: newsItems,
             signedInUser: req.isAuthenticated(),
         });
     });
@@ -30,16 +31,16 @@ module.exports = function (passport) {
     router
         .route("/new")
         .get(authUser, async (req, res, next) => {
-            res.render("calendar/newCalendarItem", {
+            res.render("news/new-news-item", {
                 calendarItem: emptyCalendarItem(),
             });
             return;
         })
         .post(authUser, async (req, res, next) => {
-            let calendarItem = await req.body;
-            await newCalendarItem(calendarItem, req.user)
+            let newsItem = await req.body;
+            await newCalendarItem(newsItem, req.user)
                 .then((msg) => {
-                    res.redirect(`/calendar`);
+                    res.redirect(`/news`);
                     return;
                 })
                 .catch((err) => {
@@ -47,13 +48,11 @@ module.exports = function (passport) {
                 });
         });
 
-    router.route("/:calendarItemSlug/").get(async (req, res, next) => {
+    router.route("/:newsItemSlug/").get(async (req, res, next) => {
         try {
-            let calendarItem = await getCalendarItemBySlug(
-                req.params.calendarItemSlug
-            );
-            res.render("calendar/calendarItemOverview", {
-                calendarItem: calendarItem,
+            let newsItem = await getCalendarItemBySlug(req.params.newsItemSlug);
+            res.render("news/view-news-item", {
+                calendarItem: newsItem,
                 user: req.user,
                 role: ROLE,
                 hasPermission: hasPermission,
@@ -62,7 +61,7 @@ module.exports = function (passport) {
         } catch (error) {
             next(
                 ApiError.badRequest(
-                    `The calender item ${req.params.committeeSlug} does not exist`,
+                    `The calender item ${req.params.newsItemSlug} does not exist`,
                     error
                 )
             );
@@ -75,7 +74,7 @@ module.exports = function (passport) {
             let calendarItem = await getCalendarItemBySlug(
                 req.params.calendarItemSlug
             );
-            res.render("calendar/editCalendarItem", {
+            res.render("news/edit-news-item", {
                 calendarItem: calendarItem,
                 deletePermission: true,
             });
@@ -83,17 +82,19 @@ module.exports = function (passport) {
         .put(async (req, res, next) => {
             await updateCalendarItem(req.body, req.params.calendarItemSlug)
                 .then((msg) => {
-                    res.redirect(`/calendar/${req.params.calendarItemSlug}`);
+                    res.redirect(`/news/${req.params.calendarItemSlug}`);
                 })
                 .catch((err) => {
                     next(err);
                 });
         })
         .delete(authUser, authRole(ROLE.ADMIN), async (req, res, next) => {
-            let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            await deleteCommittee(committee.committeeName)
+            let calendarItem = await getCalendarItemBySlug(
+                req.params.calendarItemSlug
+            );
+            await deleteCalendaritem(calendarItem)
                 .then((msg) => {
-                    res.redirect(`/committees`);
+                    res.redirect(`/news`);
                 })
                 .catch((err) => {
                     next(err);
