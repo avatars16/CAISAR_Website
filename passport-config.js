@@ -1,11 +1,10 @@
 const LocalStrategy = require("passport-local").Strategy;
-const userApi = require("./models/users-api");
+const userApi = require("./controllers/users-api");
 const bcrypt = require("bcrypt");
 
 function initiliaze(passport) {
     const loginUser = async (userEmail, password, done) => {
         if (!(await userApi.checkIfUserExists(userEmail))) {
-            // return done(err, user, {message: "No user with that email"})
             return done(null, false, { message: "No user with that email" });
         }
         const user = await userApi.getUser({ email: userEmail });

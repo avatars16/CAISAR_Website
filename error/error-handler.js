@@ -22,7 +22,7 @@ function apiErrorHandler(err, req, res, next) {
         }
 
         res.render("errors/basic-error-page", {
-            errorMsg: err.message,
+            message: err.message,
             url: goToUrl,
             path: path,
         });

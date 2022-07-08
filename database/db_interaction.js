@@ -1,5 +1,5 @@
 const ApiError = require("../error/data-errors");
-const data = require("../models/data");
+const data = require("../controllers/data");
 const { search } = require("../routes");
 const db_generic = require("./db_generic");
 

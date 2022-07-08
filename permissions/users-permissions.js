@@ -1,4 +1,4 @@
-const { ROLE } = require("../models/data");
+const { ROLE } = require("../controllers/data");
 
 function canViewSpecificUser(currentUser, requestedUserSlug) {
     return (

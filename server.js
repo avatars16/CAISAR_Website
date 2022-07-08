@@ -43,11 +43,13 @@ const userRouter = require("./routes/users-route")(passport);
 const committeesRouter = require("./routes/committees-route")(passport);
 const databaseRouter = require("./routes/database");
 const indexRouter = require("./routes/index");
+const calandarRouter = require("./routes/calendar-route")(passport);
 
 app.use("/db", databaseRouter);
 app.use("/ls", lsRouter);
 app.use("/users", userRouter);
 app.use("/committees", committeesRouter);
+app.use("/calendar", calandarRouter);
 app.use("/", indexRouter);
 
 app.use(apiErrorHandler);

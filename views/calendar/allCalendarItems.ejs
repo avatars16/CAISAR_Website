@@ -1,0 +1,11 @@
+<br>
+<a href="/calendar/new"> add Item</a>
+
+<h1>All committees</h1>
+<% calendarItems.forEach(item => {%>
+<section>
+<a href="/calendar/<%=item.calendarSlug%>/"> <h1><%=item.itemTitle%></h1></a>
+<p><%=item.itemDescription%></p>
+</section>
+<% });%> 
+<br>

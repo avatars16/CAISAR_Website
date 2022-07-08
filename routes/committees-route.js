@@ -6,13 +6,13 @@ const {
     authRole,
     hasPermission,
 } = require("../permissions/basicAuth");
-const { ROLE, COMMITTEEROLE } = require("../models/data");
+const { ROLE, COMMITTEEROLE } = require("../controllers/data");
 const ApiError = require("../error/data-errors");
 const {
     canViewSpecificUser,
     hasRole,
 } = require("../permissions/users-permissions");
-const { getUserBySlug } = require("../models/users-api");
+const { getUserBySlug } = require("../controllers/users-api");
 const {
     getAllCommittees,
     getCommitteeBySlug,
@@ -23,7 +23,7 @@ const {
     addMemberToCommittee,
     updateMemberInCommittee,
     deleteMemberInCommittee,
-} = require("../models/committees-api");
+} = require("../controllers/committees-api");
 const { getDataFromMultipleTables } = require("../database/db_interaction");
 
 module.exports = function (passport) {

@@ -1,5 +1,5 @@
 const ApiError = require("../error/data-errors");
-const { ROLE, COMMITTEEROLE } = require("../models/data");
+const { ROLE, COMMITTEEROLE } = require("../controllers/data");
 
 function authUser(req, res, next) {
     if (req.isAuthenticated()) return next();

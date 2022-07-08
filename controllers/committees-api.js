@@ -13,7 +13,6 @@ const {
 const helper = require("./helper-functions");
 const slugify = require("slugify");
 const ApiError = require("../error/data-errors");
-const apiErrorHandler = require("../error/error-handler");
 const data = require("./data");
 const { search } = require("../routes");
 const { createPool } = require("mysql");

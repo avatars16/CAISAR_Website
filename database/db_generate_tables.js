@@ -39,4 +39,24 @@ async function createCommitteeTable(req, res) {
     });
 }
 
-module.exports = { createUserTable, createCommitteeTable };
+async function createCalenderTable(req, res) {
+    let dates =
+        "startDate DATE, startTime TIME, endDate DATE, endTime TIME, signupDate DATE, signOutDate DATE,";
+    let texts =
+        "itemTitle VARCHAR(255) NOT NULL, itemDescription TEXT NOT NULL, itemMarkdown TEXT NOT NULL, itemHTML TEXT NOT NULL,";
+    let statistics =
+        "calendarSlug VARCHAR(255), createdBy int, views int DEFAULT 0,";
+    let sql =
+        "CREATE TABLE calendar(calendarId int AUTO_INCREMENT," +
+        dates +
+        texts +
+        statistics +
+        "  PRIMARY KEY(calendarId), FOREIGN KEY (createdBy) REFERENCES users(userId))";
+    db = getConn();
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        res.send("calendar table created");
+    });
+}
+
+module.exports = { createUserTable, createCommitteeTable, createCalenderTable };

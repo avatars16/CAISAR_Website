@@ -1,0 +1,9 @@
+<br />
+<h1><%= calendarItem.itemTitle%></h1>
+<%- calendarItem.itemHTML%>
+
+<%if(signedInUser){ 
+if(hasPermission(user.websiteRole, role.BOARD)) { %>
+<a href="/calendar/<%= calendarItem.calendarSlug%>/edit">edit calendar Item</a>
+<%}}%>
+<br />

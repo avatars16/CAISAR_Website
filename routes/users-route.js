@@ -6,24 +6,22 @@ const {
     authRole,
     hasPermission,
 } = require("../permissions/basicAuth");
-const { ROLE } = require("../models/data");
+const { ROLE } = require("../controllers/data");
 const ApiError = require("../error/data-errors");
 const {
-    getUserByMail,
     getUserBySlug,
     updateUser,
     deleteUser,
     getAllUsers,
-    searchUser,
     searchUserByName,
-} = require("../models/users-api");
+} = require("../controllers/users-api");
 const {
     canViewSpecificUser,
     hasRole,
     canDeleteUser,
 } = require("../permissions/users-permissions");
 const { getDataFromMultipleTables } = require("../database/db_interaction");
-const { getCommitteeByName } = require("../models/committees-api");
+const { getCommitteeByName } = require("../controllers/committees-api");
 
 module.exports = function (passport) {
     router.route("/").get(authUser, async (req, res) => {

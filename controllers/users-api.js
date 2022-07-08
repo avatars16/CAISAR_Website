@@ -9,7 +9,7 @@ const {
     getAllRows,
     searchInColumns,
 } = require("../database/db_interaction");
-const helper = require("../models/helper-functions");
+const helper = require("./helper-functions");
 const slugify = require("slugify");
 const ApiError = require("../error/data-errors");
 const apiErrorHandler = require("../error/error-handler");
