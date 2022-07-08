@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { authUser, notAuthUser, authRole } = require("../permissions/basicAuth");
 const { ROLE } = require("../controllers/data");
-const canViewSpecificUser = require("../permissions/users-permissions");
 const ApiError = require("../error/data-errors");
 
 module.exports = function (passport) {

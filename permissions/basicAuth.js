@@ -1,5 +1,6 @@
 const ApiError = require("../error/data-errors");
 const { ROLE, COMMITTEEROLE } = require("../controllers/data");
+const { getMemberRoleInCommittee } = require("../controllers/committees-api");
 
 function authUser(req, res, next) {
     if (req.isAuthenticated()) return next();
@@ -47,4 +48,24 @@ function hasPermission(userRole, neededRole) {
     return false;
 }
 
-module.exports = { authUser, notAuthUser, authRole, hasPermission };
+async function getCommitteeMemberPermission(user) {
+    if (user == null) return false;
+    let memberRole = COMMITTEEROLE.MEMBER;
+    possibleMemberRole = await getMemberRoleInCommittee(
+        committee.committeeName,
+        user.userId
+    );
+    if (possibleMemberRole) memberRole = possibleMemberRole;
+    return (
+        hasPermission(user.websiteRole, COMMITTEEROLE.CHAIR) ||
+        hasPermission(memberRole, COMMITTEEROLE.CHAIR)
+    );
+}
+
+module.exports = {
+    authUser,
+    notAuthUser,
+    authRole,
+    hasPermission,
+    getCommitteeMemberPermission,
+};

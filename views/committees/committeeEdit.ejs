@@ -32,7 +32,7 @@
     </fieldset> 
     <button type="submit">Change</button>
 </form>
-<% if(checkAuth(user.websiteRole, role.ADMIN)) {%>
+<% if(deletePermission) {%>
 <form action="/committees/<%=committee.committeeSlug %>/edit?_method=DELETE" method="post">
     <button type="submit">Delete</button>
     </form>

@@ -8,10 +8,6 @@ const {
 } = require("../permissions/basicAuth");
 const { ROLE, COMMITTEEROLE } = require("../controllers/data");
 const ApiError = require("../error/data-errors");
-const {
-    canViewSpecificUser,
-    hasRole,
-} = require("../permissions/users-permissions");
 const { getUserBySlug } = require("../controllers/users-api");
 const {
     newCalendarItem,

@@ -2,21 +2,16 @@ const express = require("express");
 const router = express.Router();
 const {
     authUser,
-    notAuthUser,
     authRole,
     hasPermission,
+    getCommitteeMemberPermission,
 } = require("../permissions/basicAuth");
 const { ROLE, COMMITTEEROLE } = require("../controllers/data");
 const ApiError = require("../error/data-errors");
-const {
-    canViewSpecificUser,
-    hasRole,
-} = require("../permissions/users-permissions");
 const { getUserBySlug } = require("../controllers/users-api");
 const {
     getAllCommittees,
     getCommitteeBySlug,
-    getMemberRoleInCommittee,
     newCommittee,
     updateCommittee,
     deleteCommittee,
@@ -55,54 +50,39 @@ module.exports = function (passport) {
         });
 
     router.route("/:committeeSlug/").get(async (req, res, next) => {
-        try {
-            let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            let committeeMembers = await getDataFromMultipleTables(
-                "users",
-                "committees",
-                "userId",
-                "userId",
-                { committeeName: committee.committeeName }
-            );
-            memberRole = COMMITTEEROLE.MEMBER;
-            if (req.user) {
-                possibleMemberRole = await getMemberRoleInCommittee(
-                    committee.committeeName,
-                    req.user.userId
-                );
-                if (possibleMemberRole) memberRole = possibleMemberRole;
-            }
-
-            res.render("committees/committeeOverview", {
-                committee: committee,
-                committeeMembers: committeeMembers,
-                user: req.user,
-                role: ROLE,
-                hasPermission: hasPermission,
-                memberRole: memberRole.memberRole,
-                role: COMMITTEEROLE,
-                signedInUser: req.isAuthenticated(),
-            });
-        } catch (error) {
-            next(
+        let committee = await getCommitteeBySlug(req.params.committeeSlug);
+        if (committee == [])
+            return next(
                 ApiError.badRequest(
                     `The committee ${req.params.committeeSlug} does not exist`,
                     error
                 )
             );
-        }
+        let committeeMembers = await getDataFromMultipleTables(
+            "users",
+            "committees",
+            "userId",
+            "userId",
+            { committeeName: committee.committeeName }
+        );
+        res.render("committees/committeeOverview", {
+            committee: committee,
+            committeeMembers: committeeMembers,
+            user: req.user,
+            hasEditPermission: getCommitteeMemberPermission(req.user),
+        });
     });
 
     router
         .route("/:committeeSlug/edit")
         .get(authUser, authRole(ROLE.BOARD), async (req, res) => {
             let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            let currentUser = await req.user;
             res.render("committees/committeeEdit", {
                 committee: committee,
-                checkAuth: hasRole,
-                role: ROLE,
-                user: currentUser,
+                deletePermission: hasPermission(
+                    req.user.websiteRole,
+                    ROLE.ADMIN
+                ),
             });
         })
         .put(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
@@ -114,7 +94,7 @@ module.exports = function (passport) {
                 oldName.committeeName
             )
                 .then((msg) => {
-                    res.redirect(`/committees`);
+                    res.redirect(`/committees/${req.params.committeeSlug}/`);
                 })
                 .catch((err) => {
                     next(err);
@@ -142,31 +122,22 @@ module.exports = function (passport) {
                 "userId",
                 { committeeName: committee.committeeName }
             );
-            let member = await getMemberRoleInCommittee(
-                committee.committeeName,
-                req.user.userId
-            );
-            if (member)
-                if (
-                    !(
-                        hasPermission(member.memberRole, COMMITTEEROLE.CHAIR) ||
-                        hasPermission(req.user.websiteRole, COMMITTEEROLE.CHAIR)
-                    )
-                )
-                    return next(
-                        ApiError.forbidden("You do not have acces to this page")
-                    );
+            if (!getCommitteeMemberPermission(req.user))
+                return next(
+                    ApiError.forbidden("You do not have acces to this page")
+                );
             res.render("committees/committeeMembersEdit", {
                 committee: committee,
                 committeeMembers: committeeMembers,
-                checkAuth: hasPermission,
-                user: req.user,
-                role: ROLE,
+                deletePermission: hasPermission(
+                    req.user.websiteRole,
+                    ROLE.ADMIN
+                ),
             });
         })
         .post(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
             let user = await getUserBySlug(req.body.userSlug);
-            if (!user)
+            if (user == [])
                 next(
                     ApiError.badRequest(
                         `User with url: ${req.body.userId} does not exists`,
@@ -176,7 +147,7 @@ module.exports = function (passport) {
             let committee = await getCommitteeBySlug(req.params.committeeSlug);
             await addMemberToCommittee(committee.committeeSlug, user)
                 .then((msg) => {
-                    res.redirect(`/committees`);
+                    res.redirect(`/committees/${req.params.committeeSlug}/`);
                 })
                 .catch((err) => {
                     next(err);
@@ -184,16 +155,7 @@ module.exports = function (passport) {
         })
         .put(authUser, async (req, res, next) => {
             let committee = await req.body;
-            let memberRole = await getMemberRoleInCommittee(
-                committee.committeeName,
-                req.user.userId
-            );
-            if (
-                !(
-                    hasPermission(memberRole, COMMITTEEROLE.CHAIR) ||
-                    hasPermission(req.user.websiteRole, COMMITTEEROLE.CHAIR)
-                )
-            )
+            if (!getCommitteeMemberPermission(req.user))
                 next(ApiError.forbidden("You do not have acces to this page"));
             await updateMemberInCommittee(committee, req.user.userId)
                 .then((msg) => {
@@ -205,7 +167,6 @@ module.exports = function (passport) {
         })
         .delete(authUser, authRole(ROLE.ADMIN), async (req, res, next) => {
             let committee = await getCommitteeBySlug(req.params.committeeSlug);
-            console.log(req.query, req.query.user);
             await deleteMemberInCommittee(
                 committee.committeeName,
                 req.query.user

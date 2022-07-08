@@ -179,7 +179,6 @@ async function getCommitteeBySlug(committeeSlug) {
 }
 
 async function getCommittee(jsonQueryObject) {
-    //for example to get user by email: getUser({ email: userEmail})
     return (await getAllCommitteeRows(jsonQueryObject))[0];
 }
 

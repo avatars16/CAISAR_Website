@@ -23,14 +23,13 @@ for (let member of committeeMembers) {
                 </fieldset>
     <button type="submit">Change</button>
 </form>
-<% if(checkAuth(user.websiteRole, role.ADMIN)) {%>
+<% if(deletePermission) {%>
 <form action= "/committees/<%=committee.committeeSlug%>/members/edit?user=<%=member.userId%>&_method=DELETE" method="post">
     <button type="submit">Delete</button>
 </form>
 <%}%>
 <% } } %> 
 
-<%#Search option would be nice#%>
 <form action="/committees/<%=committee.committeeSlug %>/members/edit" method="post">
     <label for="userSlug">Userslug</label>
     <input type="userSlug" name="userSlug" id="userSlug" onkeyup="sendData(this)">

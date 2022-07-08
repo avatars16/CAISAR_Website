@@ -20,10 +20,9 @@
             </tr>
         <% } } %>
 </table>
-<%if(signedInUser){ 
-if(hasPermission(user.websiteRole, role.CHAIR) || hasPermission(memberRole, role.CHAIR)) { %>
+<%if(hasEditPermission) { %>
 <a href="/committees/<%= committee.committeeSlug %>/edit">edit committee</a>
-<%}}%>
+<%}%>
 <br />
 <h1>Members</h1>
 <table>
@@ -53,9 +52,7 @@ if(hasPermission(user.websiteRole, role.CHAIR) || hasPermission(memberRole, role
     </tr>
     <% } } %>
 </table>
-<% 
-if(signedInUser){
-if(hasPermission(user.websiteRole, role.CHAIR)) { %>
+<% if(hasEditPermission) { %>
 <a href="/committees/<%= committee.committeeSlug %>/members/edit">edit members</a>
-<%}}%>
+<%}%>
 <br />
