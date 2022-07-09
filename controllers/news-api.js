@@ -3,7 +3,7 @@ const marked = require("marked");
 const createDomPurify = require("dompurify");
 const { JSDOM } = require("jsdom");
 const dompurify = createDomPurify(new JSDOM().window);
-const ApiError = require("../error/data-errors");
+const ApiError = require("../utils/error/data-errors");
 const {
     updateRow,
     addNewRow,
@@ -64,7 +64,6 @@ function updateCalendarItem(calendarItem, calendarSlug) {
         calendarItem.itemHTML = dompurify.sanitize(
             marked.parse(calendarItem.itemMarkdown)
         );
-        console.info(calendarItem);
         err = await updateRow("calendar", calendarItem, {
             calendarSlug: calendarSlug,
         });

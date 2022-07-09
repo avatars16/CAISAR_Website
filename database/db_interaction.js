@@ -1,5 +1,5 @@
-const ApiError = require("../error/data-errors");
-const data = require("../controllers/data");
+const ApiError = require("../utils/error/data-errors");
+const data = require("../permissions/data");
 const { search } = require("../routes");
 const db_generic = require("./db_generic");
 
@@ -98,7 +98,7 @@ async function getDataFromMultipleTables(
 
 async function searchInColumns(table, selectValues, filter, n = 10) {
     let prepareStm = prepareWhereLikeStmt(filter);
-    let sql = `SELECT ${selectValues} FROM ${table} WHERE (${prepareStm[0]}) LIMIT ${n} `;
+    let sql = `SELECT DISTINCT ${selectValues} FROM ${table} WHERE (${prepareStm[0]}) LIMIT ${n} `;
     return await db_generic
         .dbQuery(sql, prepareStm[1])
         .then((result) => {

@@ -9,8 +9,8 @@ const {
 } = require("../database/db_interaction");
 const helper = require("./helper-functions");
 const slugify = require("slugify");
-const ApiError = require("../error/data-errors");
-const data = require("./data");
+const ApiError = require("../utils/error/data-errors");
+const data = require("../permissions/data");
 
 function userObject() {
     return {
@@ -117,7 +117,6 @@ async function getUser(jsonQueryObject) {
 
 async function userLoginStatisticsUpdate(currentInlogCount, userId) {
     try {
-        console.log(new Date());
         await updateRow(
             "users",
             { numberOfLogins: currentInlogCount + 1, lastLogin: new Date() },
@@ -129,34 +128,17 @@ async function userLoginStatisticsUpdate(currentInlogCount, userId) {
     }
 }
 
-async function searchUserByName(filterItem, n) {
+async function updateProfileViews(currentProfileViews, userId) {
     try {
-        let filterStmt = filterItem + "%";
-        users = await searchUser(
-            "firstName, middleName,lastName,userSlug",
-            {
-                firstName: filterStmt,
-                middleName: filterStmt,
-                lastName: filterStmt,
-                userSlug: filterStmt,
-            },
-            3
+        await updateRow(
+            "users",
+            { profileViews: currentProfileViews + 1 },
+            { userId: userId }
         );
-        if (users instanceof ApiError) {
-            return users;
-        }
-        return users;
-    } catch (err) {
-        return err;
+        return true;
+    } catch (error) {
+        return error;
     }
-}
-
-async function searchUser(getColumns, filter, n) {
-    return new Promise(async (resolve, reject) => {
-        let data = await searchInColumns("users", getColumns, filter, n);
-        if (data instanceof ApiError) return reject(data);
-        return resolve(data);
-    });
 }
 module.exports = {
     userObject,
@@ -169,7 +151,6 @@ module.exports = {
     updateUser,
     deleteUser,
     getAllUsers,
-    searchUser,
-    searchUserByName,
     userLoginStatisticsUpdate,
+    updateProfileViews,
 };

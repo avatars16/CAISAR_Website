@@ -9,8 +9,8 @@ const {
 } = require("../database/db_interaction");
 const helper = require("./helper-functions");
 const slugify = require("slugify");
-const ApiError = require("../error/data-errors");
-const data = require("./data");
+const ApiError = require("../utils/error/data-errors");
+const data = require("../permissions/data");
 const { search } = require("../routes");
 
 //TODO: Clean up this code, its a mess.

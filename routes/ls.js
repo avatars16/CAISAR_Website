@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { authUser, notAuthUser, authRole } = require("../permissions/basicAuth");
-const { ROLE } = require("../controllers/data");
-const ApiError = require("../error/data-errors");
+const { ROLE } = require("../permissions/data");
+const ApiError = require("../utils/error/data-errors");
 const { userObject } = require("../controllers/users-api");
 
 module.exports = function (passport) {

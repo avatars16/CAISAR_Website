@@ -7,10 +7,9 @@
     </tr>
     <% 
     let notShow = ["password","userId","createdAt", "websiteRole","numberOfLogins","lastLogin","profileViews"]
-    let privateDetails = ["email","phone","private"]
+    let privateDetails = ["email","phone","private","birthday"]
     for (let prop in user) {
         if(!notShow.includes(String(prop))){
-            console.log(prop)
             if((!private && !privateDetails.includes(String(prop)))
             || (hasEditPermission && privateDetails.includes(String(prop)))){
         %>

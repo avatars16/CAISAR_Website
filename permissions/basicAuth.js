@@ -1,34 +1,36 @@
-const ApiError = require("../error/data-errors");
-const { ROLE, COMMITTEEROLE } = require("../controllers/data");
+const ApiError = require("../utils/error/data-errors");
+const { ROLE, COMMITTEEROLE } = require("./data");
 const { getMemberRoleInCommittee } = require("../controllers/committees-api");
 
 function authUser(req, res, next) {
     if (req.isAuthenticated()) return next();
-    next(ApiError.unautharized("You need to be signed in", false, "/ls/login"));
-    return;
+    return next(
+        ApiError.unautharized(
+            "You need to be signed in",
+            "",
+            false,
+            "/ls/login"
+        )
+    );
 }
 
 function notAuthUser(req, res, next) {
-    if (req.isAuthenticated()) {
-        next(
+    if (req.isAuthenticated())
+        return next(
             ApiError.unautharized(
                 "You can not acces this page while signed in",
+                "",
                 true,
                 "/ls/"
             )
         );
-        return;
-    }
     return next();
 }
 
 function authRole(neededRole) {
     return (req, res, next) => {
-        console.log("test");
-        if (!hasPermission(req.user.websiteRole, neededRole)) {
-            next(ApiError.forbidden("You do not have the permissions"));
-            return;
-        }
+        if (!hasPermission(req.user.websiteRole, neededRole))
+            return next(ApiError.forbidden("You do not have the permissions"));
         next();
     };
 }
