@@ -17,10 +17,14 @@ function userObject() {
         firstName: "test",
         middleName: undefined,
         lastName: "test",
+        postalcode: "1234AB",
+        adress: "street",
+        houseNumber: 1,
+        suffix: undefined,
+        phone: "06-12345678",
         birthday: undefined,
         email: "test@test.com",
         password: undefined,
-        websiteRole: undefined,
     };
 }
 async function createUser(newUser) {
@@ -31,11 +35,12 @@ async function createUser(newUser) {
     let fullName = newUser.firstName + newUser.lastName;
     if (newUser.middleName)
         fullName = newUser.firstName + newUser.middleName + newUser.lastName;
-    newUser.userSlug = await createSlug(fullName);
+    newUser.userURL = await createURL(fullName);
     return newUser;
 }
 
 async function saveUser(newUser) {
+    //REMARK! data can be an error
     let data = await addNewRow("users", newUser);
     return data;
 }
@@ -67,13 +72,13 @@ function deleteUser(user) {
     });
 }
 
-async function createSlug(fullName) {
+async function createURL(fullName) {
     var slugName = slugify(fullName, { lower: true, strict: true });
-    let data = await getUser({ userSlug: slugName });
+    let data = await getUser({ userURL: slugName });
     if (data == null) return slugName;
     var i = 0;
     newSlugName = slugify(fullName + i, { lower: true, strict: true });
-    while (await getUser({ userSlug: newSlugName })) {
+    while ((await getUser({ userURL: newSlugName })) != null) {
         i++;
         newSlugName = slugify(fullName + i, { lower: true, strict: true });
     }
@@ -88,8 +93,8 @@ async function checkIfUserExists(inputEmail) {
     return true;
 }
 
-async function getUserBySlug(userSlug) {
-    return await getUser({ userSlug: userSlug });
+async function getUserByURL(userURL) {
+    return await getUser({ userURL: userURL });
 }
 
 async function getUserByMail(inputEmail) {
@@ -99,8 +104,7 @@ async function getUserByMail(inputEmail) {
 async function getAllUsers() {
     let data = await getAllRows("users", "*");
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data;
 }
@@ -109,8 +113,7 @@ async function getUser(jsonQueryObject) {
     //for example to get user by email: getUser({ email: userEmail})
     let data = await getSpecificRows("users", "*", jsonQueryObject);
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data[0];
 }
@@ -147,7 +150,7 @@ module.exports = {
     checkIfUserExists,
     getUser,
     getUserByMail,
-    getUserBySlug,
+    getUserByURL,
     updateUser,
     deleteUser,
     getAllUsers,

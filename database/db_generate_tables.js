@@ -1,31 +1,33 @@
 const { getConn } = require("./db_generic");
 
-async function createUserTable(req, res) {
+async function createUsersTable(req, res, next) {
     let names =
         "firstName VARCHAR(255) NOT NULL, middleName VARCHAR(255), lastName VARCHAR(255) NOT NULL, ";
+    let adress =
+        "postalcode varchar(255)  NOT NULL, adress varchar(255)  NOT NULL ,houseNumber INT NOT NULL ,`suffix` int  NULL ,";
     let credential =
-        "email VARCHAR(255) NOT NULL, password text NOT NULL, private BOOL DEFAULT false, userSlug VARCHAR(255) NOT NULL, ";
-    let personal = "userPhone int NOT NULL, ";
+        "email VARCHAR(255) NOT NULL, password text NOT NULL, private BOOLEAN DEFAULT false,";
+    let personal = "phone VARCHAR(255) NOT NULL, birthday DATE NULL,";
     let statistics =
-        "createdAt DATE DEFAULT CURRENT_DATE(),lastLogin DATE DEFAULT CURRENT_DATE(), numberOfLogins int DEFAULT 0, profileViews int DEFAULT 0, ";
+        "createdAt DATE DEFAULT CURRENT_DATE(), lastLogin DATE DEFAULT CURRENT_DATE(), numberOfLogins int DEFAULT 0, profileViews int DEFAULT 0, ";
     let sql =
-        "CREATE TABLE users(userId int AUTO_INCREMENT, birthday DATE, websiteRole VARCHAR(255) DEFAULT 'user', " +
+        "CREATE TABLE users(userId int AUTO_INCREMENT,userURL VARCHAR(255) NOT NULL, websiteRole VARCHAR(255) DEFAULT 'user', " +
         names +
+        adress +
         personal +
         credential +
         statistics +
         "  PRIMARY KEY(userId)) ";
     db = getConn();
     db.query(sql, (err, result) => {
-        if (err) throw err;
-        res.send("users table created");
+        if (err) next(err);
     });
 }
 
-async function createCommitteeTable(req, res) {
+async function createCommitteesTable(req, res, next) {
     let date = "startDate DATE DEFAULT CURRENT_DATE(), endDate DATE,";
     let name =
-        "committeeName VARCHAR(255) NOT NULL, committeeSlug VARCHAR(255) NOT NULL,";
+        "committeeName VARCHAR(255) NOT NULL, committeeURL VARCHAR(255) NOT NULL,";
     let committeeSpecifics =
         "committeeParent VARCHAR(255), committeeType VARCHAR(255) NOT NULL,";
     let sql =
@@ -36,30 +38,66 @@ async function createCommitteeTable(req, res) {
         "  PRIMARY KEY(committeeId), FOREIGN KEY (userId) REFERENCES users(userId))";
     db = getConn();
     db.query(sql, (err, result) => {
-        if (err) throw err;
-        res.send("committee table created");
+        if (err) next(err);
     });
 }
 
-async function createCalenderTable(req, res) {
-    //TODO: add not null to dates
-    let dates =
-        "startDate DATETIME, endDate DATETIME, signupDate DATETIME, signoutDate DATETIME,";
-    let texts =
-        "itemTitle VARCHAR(255) NOT NULL, itemDescription TEXT NOT NULL, itemMarkdown TEXT NOT NULL, itemHTML TEXT NOT NULL,";
+async function createPagesTable(req, res, next) {
+    //TODO: Possible add multiple URL foreign keys (to users, committees, activities)
+    let pageText =
+        "pageTitle varchar(255) NOT NULL, pagePreviewMd text NOT NULL, pagePreviewHTML text NOT NULL, pageDescriptionMd text NOT NULL, pageDescriptionHTML text NOT NULL,";
+    let pageOther = "pagePicture text NULL, pageNumber int NOT NULL DEFAULT 0,";
     let statistics =
-        "calendarSlug VARCHAR(255) NOT NULL, createdBy int NOT NULL, itemViews int DEFAULT 0,";
+        "createdBy INT NOT NULL, createdAt DATETIME NOT NULL DEFAULT CURRENT_DATE(), pageViews INT NOT NULL DEFAULT 0,";
     let sql =
-        "CREATE TABLE calendar(calendarId int AUTO_INCREMENT," +
-        texts +
-        dates +
+        "CREATE TABLE pages(pageId int AUTO_INCREMENT, pageURL VARCHAR NOT NULL," +
+        pageText +
+        pageOther +
         statistics +
-        "PRIMARY KEY(calendarId), FOREIGN KEY (createdBy) REFERENCES users(userId))";
+        "PRIMARY KEY(pageId), FOREIGN KEY (createdBy) REFERENCES users(userId))";
     db = getConn();
     db.query(sql, (err, result) => {
-        if (err) throw err;
-        res.send("calendar table created");
+        if (err) next(err);
     });
 }
 
-module.exports = { createUserTable, createCommitteeTable, createCalenderTable };
+async function createActivitiesTable(req, res, next) {
+    let dates =
+        "beginDate DATETIME NOT NULL, endDate DATETIME NOT NULL, signupDate DATETIME NOT NULL, signoutDate DATETIME NOT NULL,";
+    let money = "cost INT NOT NULL,";
+    let sql =
+        "CREATE TABLE activities(activityId int AUTO_INCREMENT, activityURL varchar(255) NOT NULL, userId int NULL, createdBy int NULL," +
+        dates +
+        money +
+        "PRIMARY KEY(activityId), FOREIGN KEY (createdBy) REFERENCES users(userId), FOREIGN KEY (userId) REFERENCES users(userId))";
+    db = getConn();
+    db.query(sql, (err, result) => {
+        if (err) next(err);
+    });
+}
+
+async function createFinancesTable(req, res, next) {
+    let dates =
+        "originDate DATE NOT NULL DEFAULT CURRENT_DATE(), processingDate DATE NULL,";
+    let finances =
+        "financeType VARCHAR(255) NOT NULL, financeDescription VARCHAR(255) NOT NULL,";
+    let money = "amount INT NOT NULL, payed BOOLEAN NOT NULL DEFAULT false,";
+    let sql =
+        "CREATE TABLE finances(financeId int AUTO_INCREMENT, userId int NOT NULL, activityId INT NULL," +
+        dates +
+        finances +
+        money +
+        "PRIMARY KEY(financeId), FOREIGN KEY (userId) REFERENCES users(userId), FOREIGN KEY (activityId) REFERENCES activities(activityId))";
+    db = getConn();
+    db.query(sql, (err, result) => {
+        if (err) next(err);
+    });
+}
+
+module.exports = {
+    createUsersTable,
+    createCommitteesTable,
+    createPagesTable,
+    createActivitiesTable,
+    createFinancesTable,
+};

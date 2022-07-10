@@ -1,11 +1,11 @@
 <br>
-<h1>Edit committee: <%= calendarItem.itemTitle%></h1>
-<form action="/news/<%=calendarItem.calendarSlug %>/edit?_method=PUT" method="post">
+<h1>Edit committee: <%= newsPage.pageTitle%></h1>
+<form action="/news/<%=newsPage.pageURL %>/edit?_method=PUT" method="post">
     <%- include("./_news-item-edit-form") %>
     <button type="submit">Change</button>
 </form>
 <% if(deletePermission) {%>
-<form action="/news/<%=calendarItem.calendarSlug %>/edit?_method=DELETE" method="post">
+<form action="/news/<%=newsPage.pageURL %>/edit?_method=DELETE" method="post">
     <button type="submit">Delete</button>
     </form>
 <%}%>

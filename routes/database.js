@@ -1,25 +1,49 @@
 const express = require("express");
 const {
-    createUserTable,
-    createCommitteeTable,
-    createCalenderTable,
+    createUsersTable,
+    createCommitteesTable,
+    createPagesTable,
+    createActivitiesTable,
+    createFinancesTable,
 } = require("../database/db_generate_tables");
 const db = require("../database/db_generic");
 const router = express.Router();
 
-router.get("/createUserTable", (req, res) => {
-    createUserTable(req, res);
+router.get("/createTables", async (req, res, next) => {
+    await createUsersTable(req, res, next);
+    await createCommitteesTable(req, res, next);
+    await createActivitiesTable(req, res, next);
+    await createPagesTable(req, res, next);
+    await createFinancesTable(req, res, next);
+    res.send("all tables created");
 });
 
-router.get("/createCommitteeTable", (req, res) => {
-    createCommitteeTable(req, res);
+router.get("/createUsersTable", async (req, res, next) => {
+    await createUsersTable(req, res, next);
+    res.send("table created!");
 });
 
-router.get("/createCalendarTable", (req, res) => {
-    createCalenderTable(req, res);
+router.get("/createCommitteeTable", async (req, res, next) => {
+    await createCommitteesTable(req, res, next);
+    res.send("table created!");
 });
 
-router.get("/dropTable/:table", (req, res) => {
+router.get("/createActivitiesTable", async (req, res, next) => {
+    await createActivitiesTable(req, res, next);
+    res.send("table created!");
+});
+
+router.get("/createPagesTable", async (req, res, next) => {
+    await createPagesTable(req, res, next);
+    res.send("table created!");
+});
+
+router.get("/createFinancesTable", async (req, res, next) => {
+    await createFinancesTable(req, res, next);
+    res.send("table created!");
+});
+
+router.get("/dropTable/:table", (req, res, next) => {
     console.log(req.params.table);
     let sql = `DROP TABLE ${req.params.table}`;
     db.dbGetRows(sql);

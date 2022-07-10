@@ -27,11 +27,11 @@ router.route("/").get(authUser, async (req, res) => {
 router.post("/search", authUser, searchUserByName);
 
 router
-    .route("/:userSlug/edit")
+    .route("/:userURL/edit")
     .get(authUser, checkIfUserPageExists, async (req, res, next) => {
         if (
             !(
-                req.user.userSlug == req.params.userSlug ||
+                req.user.userURL == req.params.userURL ||
                 hasPermission(req.user.websiteRole, ROLE.BOARD)
             )
         )
@@ -47,7 +47,7 @@ router
     .put(authUser, checkIfUserPageExists, async (req, res, next) => {
         if (
             !(
-                req.user.userSlug == req.params.userSlug ||
+                req.user.userURL == req.params.userURL ||
                 hasPermission(req.user.websiteRole, ROLE.BOARD)
             )
         )
@@ -56,7 +56,7 @@ router
             );
         updateUser(req.body, req.requestedUser.userId, req.requestedUser.email)
             .then((msg) => {
-                res.redirect(`/users/${req.params.userSlug}/`);
+                res.redirect(`/users/${req.params.userURL}/`);
             })
             .catch((err) => {
                 next(err);
@@ -88,7 +88,7 @@ router
     );
 
 router
-    .route("/:userSlug/")
+    .route("/:userURL/")
     .get(authUser, checkIfUserPageExists, async (req, res, next) => {
         let committees = await getDataFromMultipleTables(
             "users",
@@ -121,17 +121,17 @@ router
             batch: userBatch,
             private: req.user.private,
             hasEditPermission:
-                req.user.userSlug == req.params.userSlug ||
+                req.user.userURL == req.params.userURL ||
                 hasPermission(req.user.websiteRole, ROLE.BOARD),
         });
     });
 
 async function checkIfUserPageExists(req, res, next) {
-    req.requestedUser = await getUserBySlug(req.params.userSlug);
+    req.requestedUser = await getUserBySlug(req.params.userURL);
     if (req.requestedUser == null)
         return next(
             ApiError.internal(
-                `User with url: ${req.params.userSlug} does not exist`
+                `User with url: ${req.params.userURL} does not exist`
             )
         );
     return next();

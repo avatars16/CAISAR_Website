@@ -6,7 +6,7 @@ const ApiError = require("../utils/error/data-errors");
 async function searchCommitteeByName(req, res, next) {
     let filterStmt = req.body.payload + "%";
     let filter = { committeeName: filterStmt };
-    let getColumns = "committeeName, committeeSlug";
+    let getColumns = "committeeName, committeeURL";
     let n = 3; //Number of returned values
     let data = await searchInColumns("users", getColumns, filter, n);
     if (data instanceof ApiError) return next(data);
@@ -16,12 +16,12 @@ async function searchCommitteeByName(req, res, next) {
 async function searchUserByName(req, res, next) {
     let filterStmt = req.body.payload + "%";
     users = await searchUser(
-        "firstName, middleName,lastName,userSlug",
+        "firstName, middleName,lastName,userURL",
         {
             firstName: filterStmt,
             middleName: filterStmt,
             lastName: filterStmt,
-            userSlug: filterStmt,
+            userURL: filterStmt,
         },
         3
     );

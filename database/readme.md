@@ -108,7 +108,7 @@ In the future this can be changed to two tables, so accessing the committee info
 | startDate       | DATE         | yes      |
 | endDate         | DATE         | no       |
 | committeeName   | varchar(255) | yes      | no\*   |
-| committeeSlug   | varchar(255) | yes      | no\*   |
+| committeeURL    | varchar(255) | yes      | no\*   |
 | committeeParent | varchar(255) | no       |
 | committeeType   | varchar(255) | yes      |
 
@@ -124,6 +124,6 @@ In the future this can be changed to two tables, so accessing the committee info
 -   **startDate** User is member since, committee started at date..
 -   **endDate** Null means user is still member/ committee is still activate.
 -   **committeeName**
--   **committeeSlug** Used in URL and to look up committees.
+-   **committeeURL** Used in URL and to look up committees.
 -   **committeeParent** Can be used for sub committees.
 -   **committeeType** To distinguish between committees and batches<em>(lichtingen)</em>

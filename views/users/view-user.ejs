@@ -20,11 +20,13 @@
     <% } } }%> 
 </table>
 <%if(hasEditPermission) { %>
-<a href="/users/<%= user.userSlug %>/edit">edit user</a>
+<a href="/users/<%= user.userURL %>/edit">edit user</a>
 <%}%>
 <br>
 <h1>Lichting</h1>
-<a href="/committees/<%=batch[0].committeeSlug%>/"><h2><%=batch[0].committeeName%></h2></a>
+<%if(batch[0] != null ){%>
+<a href="/committees/<%=batch[0].committeeURL%>/"><h2><%=batch[0].committeeName%></h2></a>
+<%}%>
 <table>
     <tr>
         <th>Name</th>
@@ -40,7 +42,7 @@
             <%} else {%> 
                 <td><%= user.firstName + ' '+  user.lastName %></td>
             <%}%>
-            <td><a href="/committees/<%= member.userSlug%>/"><%=  member.userSlug%></a></td>
+            <td><a href="/committees/<%= member.userURL%>/"><%=  member.userURL%></a></td>
             <td><%= member.startDate.toLocaleDateString()%></td>   
         </tr>
     <% }%> 
@@ -61,7 +63,7 @@
         %>
         <tr>
             <td><%= member.committeeName +'\t'%> </td>
-            <td><a href="/committees/<%= member.committeeSlug%>/"><%=  member.committeeSlug%></a></td>
+            <td><a href="/committees/<%= member.committeeURL%>/"><%=  member.committeeURL%></a></td>
             <td><%= member.memberRole%></td>
             <td><%= member.startDate.toDateString()%></td>
             <%if(member.endDate){%>

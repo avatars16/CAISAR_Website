@@ -1,6 +1,6 @@
 <br>
 <h1>Edit user: <%- user.firstName%></h1>
-<form action="/users/<%=user.userSlug%>/edit?_method=PUT" method="post">
+<form action="/users/<%=user.userURL%>/edit?_method=PUT" method="post">
     <%- include("./_user-edit-form.ejs")%>
     <% if(changeWebsiteRole){%>
         <fieldset>
@@ -11,7 +11,7 @@
     <button type="submit">Change</button>
 </form>
 <% if(canDelete) {%>
-    <form action="/users/<%=user.userSlug %>/edit?_method=DELETE" method="post">
+    <form action="/users/<%=user.userURL %>/edit?_method=DELETE" method="post">
         <button type="submit">Delete</button>
     </form>
 <%}%>

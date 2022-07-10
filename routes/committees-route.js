@@ -26,10 +26,13 @@ const { getDataFromMultipleTables } = require("../database/db_interaction");
 router.route("/").get(async (req, res) => {
     let committees = await getAllCommitteesOfType(COMMITTEETYPE.COMMITTEE);
     let batches = await getAllCommitteesOfType(COMMITTEETYPE.BATCH);
+    let role;
+    if (req.isAuthenticated()) role = req.user.websiteRole;
     res.render("committees/all-committees", {
         committees,
         batches,
         signedInUser: req.isAuthenticated(),
+        hasEditPermission: hasPermission(role, ROLE.BOARD),
     });
 });
 
@@ -55,7 +58,7 @@ router
     });
 
 router
-    .route("/:committeeSlug/")
+    .route("/:committeeURL/")
     .get(checkIfCommitteePageExists, async (req, res, next) => {
         let committeeMembers = await getDataFromMultipleTables(
             "users",
@@ -76,7 +79,7 @@ router
     });
 
 router
-    .route("/:committeeSlug/edit")
+    .route("/:committeeURL/edit")
     .get(
         authUser,
         authRole(ROLE.BOARD),
@@ -98,9 +101,9 @@ router
         async (req, res, next) => {
             let committee = req.body;
             let oldName = req.committee.committeeName;
-            await updateCommittee(committee, req.params.committeeSlug, oldName)
+            await updateCommittee(committee, req.params.committeeURL, oldName)
                 .then((msg) => {
-                    res.redirect(`/committees/${req.params.committeeSlug}/`);
+                    res.redirect(`/committees/${req.params.committeeURL}/`);
                 })
                 .catch((err) => {
                     next(err);
@@ -123,7 +126,7 @@ router
     );
 
 router
-    .route("/:committeeSlug/members/edit")
+    .route("/:committeeURL/members/edit")
     .get(authUser, checkIfCommitteePageExists, async (req, res, next) => {
         let committeeMembers = await getDataFromMultipleTables(
             "users",
@@ -134,7 +137,7 @@ router
         );
         if (
             !(await getCommitteeMemberPermission(
-                committee.committeeName,
+                req.committee.committeeName,
                 req.user
             ))
         )
@@ -152,7 +155,7 @@ router
         authRole(ROLE.BOARD),
         checkIfCommitteePageExists,
         async (req, res, next) => {
-            let user = await getUserBySlug(req.body.userSlug);
+            let user = await getUserBySlug(req.body.userURL);
             if (user == [])
                 return next(
                     ApiError.badRequest(
@@ -161,7 +164,7 @@ router
                 );
             await addMemberToCommittee(req.committee, user)
                 .then((msg) => {
-                    res.redirect(`/committees/${req.params.committeeSlug}/`);
+                    res.redirect(`/committees/${req.params.committeeURL}/`);
                 })
                 .catch((err) => {
                     next(err);
@@ -194,7 +197,7 @@ router
         async (req, res, next) => {
             if (
                 !(await getCommitteeMemberPermission(
-                    committee.committeeName,
+                    req.committee.committeeName,
                     req.user
                 ))
             )
@@ -215,11 +218,11 @@ router
     );
 
 async function checkIfCommitteePageExists(req, res, next) {
-    req.committee = await getCommitteeBySlug(req.params.committeeSlug);
+    req.committee = await getCommitteeBySlug(req.params.committeeURL);
     if (req.committee == null)
         return next(
             ApiError.badRequest(
-                `The committee ${req.params.committeeSlug} does not exist`
+                `The committee ${req.params.committeeURL} does not exist`
             )
         );
     return next();

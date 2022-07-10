@@ -21,7 +21,7 @@
         <% } } %>
 </table>
 <%if(hasEditPermission) { %>
-<a href="/committees/<%= committee.committeeSlug %>/edit">edit committee</a>
+<a href="/committees/<%= committee.committeeURL %>/edit">edit committee</a>
 <%}%>
 <br />
 <h1>Members</h1>
@@ -39,10 +39,10 @@
     <tr>
         <% if(member.middleName){%>
         <td><%= member.firstName + ' ' + member.middleName +' '+ member.lastName+' \t'%></td>
-        <td><a href="<%= member.sg%>"> <%= member.userSlug%> </a></td>
+        <td><a href="<%= member.sg%>"> <%= member.userURL%> </a></td>
         <%} else {%>
         <td><%= member.firstName + ' ' + member.lastName +'\t'%></td>
-        <td><a href="/users/<%= member.userSlug%>/"> <%= member.userSlug%> </a></td>
+        <td><a href="/users/<%= member.userURL%>/"> <%= member.userURL%> </a></td>
         <%}%>
         <td><%= member.memberRole%></td>
         <td><%= member.startDate.toDateString()%></td>
@@ -53,6 +53,6 @@
     <% } } %>
 </table>
 <% if(hasEditPermission) { %>
-<a href="/committees/<%= committee.committeeSlug %>/members/edit">edit members</a>
+<a href="/committees/<%= committee.committeeURL %>/members/edit">edit members</a>
 <%}%>
 <br />

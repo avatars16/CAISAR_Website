@@ -1,7 +1,6 @@
 const logger = require("../logger");
 const ApiError = require("./data-errors");
 
-//TODO: Log to files instead of command line.
 function apiErrorHandler(err, req, res, next) {
     // in prod, don't use console.log or console.err because
     // it is not async
@@ -9,10 +8,7 @@ function apiErrorHandler(err, req, res, next) {
     err.reqUrl = req.originalUrl;
     logger.error(err);
 
-    console.log(req.originalUrl);
-
     var goToUrl = req.header("Referer");
-    console.log(goToUrl);
     var path = goToUrl;
 
     if (err instanceof ApiError) {

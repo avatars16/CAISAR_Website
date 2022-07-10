@@ -1,4 +1,4 @@
-<% let notShow = ["userId","createdAt","userSlug","lastLogin","profileViews","numberOfLogins","birthday", "email","password","websiteRole"]
+<% let notShow = ["userId","createdAt","userURL","lastLogin","profileViews","numberOfLogins","birthday", "email","password","websiteRole"]
         for (let prop in user) {
             if(!notShow.includes(String(prop))){ %>
         <fieldset>

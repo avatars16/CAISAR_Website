@@ -2,6 +2,7 @@ const ApiError = require("../utils/error/data-errors");
 const data = require("../permissions/data");
 const { search } = require("../routes");
 const db_generic = require("./db_generic");
+const logger = require("../utils/logger");
 
 async function addNewRow(table, setValues) {
     let sql = `INSERT INTO ${table} SET ?`;
@@ -14,6 +15,8 @@ async function updateRow(table, setValues, filter) {
     prepareStmt = getPrepareStmt(filter);
     let sql = `UPDATE ${table} SET ? WHERE ${prepareStmt[0]}`;
     return db_generic.dbQuery(sql, [setValues, prepareStmt[1]]).catch((err) => {
+        logger.error("test");
+        logger.error(err);
         return err;
     });
 }

@@ -1,4 +1,4 @@
-<% let notShow = ["committeeId","userId","committeeSlug", "memberRole"]
+<% let notShow = ["committeeId","userId","committeeURL", "memberRole"]
     for (let prop in committee) {
         if(!notShow.includes(String(prop))){ %>
     <fieldset>

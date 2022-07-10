@@ -1,5 +1,5 @@
-<% let notShow = ["calendarId","createdBy","calendarSlug", "itemHTML","itemViews"]
-for (let prop in calendarItem) {
+<% let notShow = ["pageId","createdBy","pageURL", "pagePreviewHTML","pageDescriptionHTML","pageViews"]
+for (let prop in newsPage) {
     if(!notShow.includes(String(prop))){ %>
 <fieldset>
     <label for="<%= prop %>"> 
@@ -10,14 +10,14 @@ for (let prop in calendarItem) {
         <%= finalRowName%>
     </label>
     <%if(prop == "startDate" || prop == "endDate" || prop == "signupDate" || prop == "signoutDate"){
-        let dateValue = calendarItem[prop]
+        let dateValue = newsPage[prop]
         if(dateValue != null) {dateValue = dateValue.toISOString().split("T")[0]} 
         %>
-        <input type="datetime-local" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop]%>">
+        <input type="datetime-local" name= "<%= prop %>" id=" <%= prop %>" value= "<%=newsPage[prop]%>">
     <%}else if (prop == "itemMarkdown"){%>
-        <textarea name= "<%= prop %>" id=" <%= prop %>">  <%=calendarItem[prop] %> </textarea>
+        <textarea name= "<%= prop %>" id=" <%= prop %>">  <%=newsPage[prop] %> </textarea>
     <%}else{%>
-        <input type="text" name= "<%= prop %>" id=" <%= prop %>" value= "<%=calendarItem[prop] %>">
+        <input type="text" name= "<%= prop %>" id=" <%= prop %>" value= "<%=newsPage[prop] %>">
     <%}%>
     
 </fieldset>

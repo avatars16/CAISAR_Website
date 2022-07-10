@@ -1,11 +1,11 @@
 <br>
-<a href="/news/new"> add Item</a>
+<a href="/news/new"> add page</a>
 
-<h1>News items</h1>
-<% calendarItems.forEach(item => {%>
+<h1>News pages</h1>
+<% newsPages.forEach(newsPage => {%>
 <section>
-<a href="/news/<%=item.calendarSlug%>/"> <h1><%=item.itemTitle%></h1></a>
-<p><%=item.itemDescription%></p>
+<a href="/news/<%=newsPage.pageURL%>/"> <h1><%=newsPage.pageTitle%></h1></a>
+<p><%=newsPage.pagePreviewMd%></p>
 </section>
 <% });%> 
 <br>

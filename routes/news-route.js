@@ -8,20 +8,20 @@ const {
 } = require("../permissions/basicAuth");
 const { ROLE, COMMITTEEROLE } = require("../permissions/data");
 const ApiError = require("../utils/error/data-errors");
-const { getUserBySlug } = require("../controllers/users-api");
 const {
-    newCalendarItem,
-    getCalendarItemBySlug,
-    getAllCalendarItems,
-    updateCalendarItem,
-    emptyCalendarItem,
-    deleteCalendaritem,
-} = require("../controllers/news-api");
+    newPage,
+    updatePage,
+    deletePage,
+    getAllPages,
+    emptyPage,
+    getPageByURL,
+} = require("../controllers/pages-api");
 
 router.route("/").get(async (req, res) => {
-    let newsItems = await getAllCalendarItems();
+    let newsPages = await getAllPages();
+    if (newsPages instanceof ApiError) return next(newsPages);
     res.render("news/all-news-items", {
-        calendarItems: newsItems,
+        newsPages: newsPages,
         signedInUser: req.isAuthenticated(),
     });
 });
@@ -31,13 +31,13 @@ router
     .route("/new")
     .get(authUser, async (req, res, next) => {
         res.render("news/new-news-item", {
-            calendarItem: emptyCalendarItem(),
+            newsPage: emptyPage(),
         });
         return;
     })
     .post(authUser, async (req, res, next) => {
-        let newsItem = await req.body;
-        await newCalendarItem(newsItem, req.user)
+        let newsPage = await req.body;
+        await newPage(newsPage, req.user)
             .then((msg) => {
                 res.redirect(`/news`);
                 return;
@@ -48,29 +48,30 @@ router
     });
 
 router
-    .route("/:newsItemSlug/")
+    .route("/:newsPageURL/")
     .get(checkIfNewspageExists, async (req, res, next) => {
+        let role;
+        if (req.isAuthenticated()) role = req.user.websiteRole;
         res.render("news/view-news-item", {
-            calendarItem: req.newsItem,
+            newsPage: req.newsPage,
             user: req.user,
             role: ROLE,
-            hasPermission: hasPermission,
-            signedInUser: req.isAuthenticated(),
+            hasPermission: hasPermission(role, ROLE.BOARD),
         });
     });
 
 router
-    .route("/:newsItemSlug/edit")
+    .route("/:newsPageURL/edit")
     .get(checkIfNewspageExists, async (req, res) => {
         res.render("news/edit-news-item", {
-            calendarItem: req.newsItem,
+            newsPage: req.newsPage,
             deletePermission: true,
         });
     })
     .put(checkIfNewspageExists, async (req, res, next) => {
-        await updateCalendarItem(req.body, req.params.newsItemSlug)
+        await updatePage(req.body, req.params.newsPageURL)
             .then((msg) => {
-                res.redirect(`/news/${req.params.newsItemSlug}`);
+                res.redirect(`/news/${req.params.newsPageURL}`);
             })
             .catch((err) => {
                 next(err);
@@ -81,7 +82,7 @@ router
         authUser,
         authRole(ROLE.ADMIN),
         async (req, res, next) => {
-            await deleteCalendaritem(req.newsItem)
+            await deletePage(req.newsPage)
                 .then((msg) => {
                     res.redirect(`/news`);
                 })
@@ -92,11 +93,11 @@ router
     );
 
 async function checkIfNewspageExists(req, res, next) {
-    req.newsItem = await getCalendarItemBySlug(req.params.newsItemSlug);
-    if (req.newsItem == null)
+    req.newsPage = await getPageByURL(req.params.newsPageURL);
+    if (req.newsPage == null)
         return next(
             ApiError.badRequest(
-                `The news item ${req.params.newsItemSlug} does not exist`
+                `The news item ${req.params.newsPageURL} does not exist`
             )
         );
     return next();

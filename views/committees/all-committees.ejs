@@ -13,11 +13,13 @@
         %>
         <tr>
             <td><%= batch.committeeName%></td>
-            <td> <a href="/committees/<%= batch.committeeSlug %>/"><%= batch.committeeSlug %></a></td>
+            <td> <a href="/committees/<%= batch.committeeURL %>/"><%= batch.committeeURL %></a></td>
         </tr>
     <% }}%> 
 </table>
-
+<%if(hasEditPermission){%>
+    <a href="/committees/new/?committeeType=batch">Nieuwe lichting</a>    
+<%}%>
 
 <br>
 <h1>All committees</h1>
@@ -34,9 +36,12 @@
         %>
         <tr>
             <td><%= committee.committeeName%></td>
-            <td> <a href="/committees/<%= committee.committeeSlug %>/"><%= committee.committeeSlug %></a></td>
+            <td> <a href="/committees/<%= committee.committeeURL %>/"><%= committee.committeeURL %></a></td>
         </tr>
     <% }}%> 
 </table>
 <br>
+<%if(hasEditPermission){%>
+    <a href="/committees/new/?committeeType=committee">New committee</a>
+<%}%>
 <%#<script src="js/searchengine.js"></script>%>

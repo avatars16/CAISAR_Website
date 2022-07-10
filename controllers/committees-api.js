@@ -33,7 +33,7 @@ async function newCommittee(name, committee) {
         if (!committee.committeeType)
             return reject(ApiError.badRequest("Type is required"));
         let newCommittee = helper.deleteEmptyFields(committee);
-        newCommittee.committeeSlug = await createCommitteeSlug(
+        newCommittee.committeeURL = await createcommitteeURL(
             newCommittee.committeeName
         );
         newCommittee.startDate = new Date();
@@ -52,7 +52,7 @@ async function newCommittee(name, committee) {
     });
 }
 
-function updateCommittee(committee, committeeSlug, oldName) {
+function updateCommittee(committee, committeeURL, oldName) {
     return new Promise(async (resolve, reject) => {
         helper.deleteEmptyFields(committee);
         if (committee.committeeName != oldName) {
@@ -69,20 +69,18 @@ function updateCommittee(committee, committeeSlug, oldName) {
                         )
                     );
 
-            newCommitteeSlug = await createCommitteeSlug(
-                committee.committeeName
-            );
+            newcommitteeURL = await createcommitteeURL(committee.committeeName);
             //Update all committee names
             err = await updateRow(
                 "committees",
                 { committeeName: committee.committeeName },
-                { committeeSlug: committeeSlug }
+                { committeeURL: committeeURL }
             );
             if (err instanceof ApiError) return reject(err);
             //Update all committee slugs
             err = await updateRow(
                 "committees",
-                { committeeSlug: newCommitteeSlug },
+                { committeeURL: newcommitteeURL },
                 { committeeName: committee.committeeName }
             );
             //update the committee name in the parent column
@@ -108,7 +106,7 @@ function updateCommittee(committee, committeeSlug, oldName) {
                     );
 
             err = await updateRow("committees", committee, {
-                committeeSlug: committeeSlug,
+                committeeURL: committeeURL,
             });
             if (err instanceof ApiError) return reject(err);
             return resolve("committee updated!");
@@ -142,7 +140,7 @@ function addMemberToCommittee(committee, user) {
             committeeName: committee.committeeName,
             memberRole: "member",
             userId: user.userId,
-            committeeSlug: committee.committeeSlug,
+            committeeURL: committee.committeeURL,
             committeeType: committee.committeeType,
         };
         if (
@@ -187,8 +185,8 @@ async function getCommitteeByName(committeeName) {
     return await getCommittee({ committeeName: committeeName });
 }
 
-async function getCommitteeBySlug(committeeSlug) {
-    return await getCommittee({ committeeSlug: committeeSlug });
+async function getCommitteeBySlug(committeeURL) {
+    return await getCommittee({ committeeURL: committeeURL });
 }
 
 async function getCommittee(jsonQueryObject) {
@@ -199,8 +197,7 @@ async function getMemberRoleInCommittee(committeeName, memberId) {
     let filter = { committeeName: committeeName, userId: memberId };
     let data = await getSpecificRows("committees", "memberRole", filter);
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data[0];
 }
@@ -213,8 +210,7 @@ async function getAllCommitteesOfType(committeeType) {
 async function getAllCommitteeRows(jsonQueryObject) {
     let data = await getSpecificRows("committees", "*", jsonQueryObject);
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data;
 }
@@ -222,13 +218,12 @@ async function getAllCommitteeRows(jsonQueryObject) {
 async function getAllCommittees() {
     let data = await getAllRows("committees", "*");
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data;
 }
 
-async function createCommitteeSlug(name) {
+async function createcommitteeURL(name) {
     var slugName = slugify(name, { lower: true, strict: true });
     let data = await getCommitteeBySlug(slugName);
     if (data == null) return slugName;

@@ -1,5 +1,8 @@
 <br />
-<h1><%= calendarItem.itemTitle%></h1>
-<%- calendarItem.itemHTML%>
-<a href="/news/<%= calendarItem.calendarSlug%>/edit">edit calendar Item</a>
+<h1><%= newsPage.pageTitle%></h1>
+<%- newsPage.pageDescriptionHTML%>
+<% if(hasPermission){%> 
+    <a href="/news/<%= newsPage.pageURL%>/edit">edit calendar Item</a>    
+<% } %>
+
 <br />
