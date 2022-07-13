@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const { authUser, notAuthUser, authRole } = require("../permissions/basicAuth");
-const { ROLE } = require("../models/data");
-const canViewSpecificUser = require("../permissions/users-permissions");
-const ApiError = require("../error/data-errors");
+const { ROLE } = require("../permissions/data");
+const ApiError = require("../utils/error/data-errors");
+const { userObject } = require("../controllers/users-api");
 
 module.exports = function (passport) {
     router.get("/", authUser, (req, res) => {
@@ -26,7 +26,7 @@ module.exports = function (passport) {
     router
         .route("/register")
         .get(notAuthUser, (req, res) => {
-            res.render("loginSystem/register");
+            res.render("users/new-user", { user: userObject() });
         })
         .post(
             passport.authenticate("signup", {

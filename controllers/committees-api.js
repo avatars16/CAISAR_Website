@@ -1,6 +1,3 @@
-const bcrypt = require("bcrypt");
-const passport = require("passport");
-const db_generic = require("../database/db_generic");
 const {
     updateRow,
     addNewRow,
@@ -12,11 +9,21 @@ const {
 } = require("../database/db_interaction");
 const helper = require("./helper-functions");
 const slugify = require("slugify");
-const ApiError = require("../error/data-errors");
-const apiErrorHandler = require("../error/error-handler");
-const data = require("./data");
+const ApiError = require("../utils/error/data-errors");
+const data = require("../permissions/data");
 const { search } = require("../routes");
-const { createPool } = require("mysql");
+
+// [ ] TODO: Clean up this code, its a mess.
+
+function emptyCommittee() {
+    return {
+        committeeName: "",
+        committeeType: "",
+        committeeParent: "",
+        startDate: undefined,
+        endDate: undefined,
+    };
+}
 
 async function newCommittee(name, committee) {
     return new Promise(async (resolve, reject) => {
@@ -26,7 +33,7 @@ async function newCommittee(name, committee) {
         if (!committee.committeeType)
             return reject(ApiError.badRequest("Type is required"));
         let newCommittee = helper.deleteEmptyFields(committee);
-        newCommittee.committeeSlug = await createCommitteeSlug(
+        newCommittee.committeeURL = await createcommitteeURL(
             newCommittee.committeeName
         );
         newCommittee.startDate = new Date();
@@ -45,7 +52,7 @@ async function newCommittee(name, committee) {
     });
 }
 
-function updateCommittee(committee, committeeSlug, oldName) {
+function updateCommittee(committee, committeeURL, oldName) {
     return new Promise(async (resolve, reject) => {
         helper.deleteEmptyFields(committee);
         if (committee.committeeName != oldName) {
@@ -62,20 +69,18 @@ function updateCommittee(committee, committeeSlug, oldName) {
                         )
                     );
 
-            newCommitteeSlug = await createCommitteeSlug(
-                committee.committeeName
-            );
+            newcommitteeURL = await createcommitteeURL(committee.committeeName);
             //Update all committee names
             err = await updateRow(
                 "committees",
                 { committeeName: committee.committeeName },
-                { committeeSlug: committeeSlug }
+                { committeeURL: committeeURL }
             );
             if (err instanceof ApiError) return reject(err);
             //Update all committee slugs
             err = await updateRow(
                 "committees",
-                { committeeSlug: newCommitteeSlug },
+                { committeeURL: newcommitteeURL },
                 { committeeName: committee.committeeName }
             );
             //update the committee name in the parent column
@@ -101,7 +106,7 @@ function updateCommittee(committee, committeeSlug, oldName) {
                     );
 
             err = await updateRow("committees", committee, {
-                committeeSlug: committeeSlug,
+                committeeURL: committeeURL,
             });
             if (err instanceof ApiError) return reject(err);
             return resolve("committee updated!");
@@ -124,9 +129,8 @@ function deleteCommittee(committeeName) {
     });
 }
 
-function addMemberToCommittee(committeeSlug, user) {
+function addMemberToCommittee(committee, user) {
     return new Promise(async (resolve, reject) => {
-        committee = await getCommitteeBySlug(committeeSlug);
         if (!committee)
             return reject(
                 ApiError.badRequest("This committee does not exists")
@@ -136,8 +140,21 @@ function addMemberToCommittee(committeeSlug, user) {
             committeeName: committee.committeeName,
             memberRole: "member",
             userId: user.userId,
-            committeeSlug: committeeSlug,
+            committeeURL: committee.committeeURL,
+            committeeType: committee.committeeType,
         };
+        if (
+            (await getMemberRoleInCommittee(
+                committee.committeeName,
+                user.userId
+            )) != null
+        )
+            return reject(
+                ApiError.badRequest(
+                    `${user.firstName} is already a member of ${committee.committeeName}`,
+                    (redirect = true)
+                )
+            );
         err = await addNewRow("committees", newMember);
         if (err instanceof ApiError) return reject(err);
         return resolve("user updated!");
@@ -153,11 +170,11 @@ function updateMemberInCommittee(updatedInfo, userId) {
     });
 }
 
-function deleteMemberInCommittee(committee, userId) {
+function deleteMemberInCommittee(committeeName, userId) {
     return new Promise(async (resolve, reject) => {
         err = await deleteRow("committees", {
-            userId: userId,
-            committeeName: committee.committeeName,
+            userId,
+            committeeName,
         });
         if (err instanceof ApiError) return reject(err);
         return resolve("Member in committee updated!");
@@ -168,12 +185,11 @@ async function getCommitteeByName(committeeName) {
     return await getCommittee({ committeeName: committeeName });
 }
 
-async function getCommitteeBySlug(committeeSlug) {
-    return await getCommittee({ committeeSlug: committeeSlug });
+async function getCommitteeBySlug(committeeURL) {
+    return await getCommittee({ committeeURL: committeeURL });
 }
 
 async function getCommittee(jsonQueryObject) {
-    //for example to get user by email: getUser({ email: userEmail})
     return (await getAllCommitteeRows(jsonQueryObject))[0];
 }
 
@@ -181,29 +197,20 @@ async function getMemberRoleInCommittee(committeeName, memberId) {
     let filter = { committeeName: committeeName, userId: memberId };
     let data = await getSpecificRows("committees", "memberRole", filter);
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data[0];
 }
 
-function getAllCommitteeMembersByCommitteeName(committeeName) {
-    return new Promise(async (resolve, reject) => {
-        let data = await getSpecificRows("committees", "*", {
-            committeeName: committeeName,
-        });
-        if (data instanceof ApiError) {
-            return reject(data);
-        }
-        return resolve(data);
-    });
+async function getAllCommitteesOfType(committeeType) {
+    let filter = { committeeType: committeeType };
+    return await getAllCommitteeRows(filter);
 }
 
 async function getAllCommitteeRows(jsonQueryObject) {
     let data = await getSpecificRows("committees", "*", jsonQueryObject);
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data;
 }
@@ -211,13 +218,12 @@ async function getAllCommitteeRows(jsonQueryObject) {
 async function getAllCommittees() {
     let data = await getAllRows("committees", "*");
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data;
 }
 
-async function createCommitteeSlug(name) {
+async function createcommitteeURL(name) {
     var slugName = slugify(name, { lower: true, strict: true });
     let data = await getCommitteeBySlug(slugName);
     if (data == null) return slugName;
@@ -244,6 +250,7 @@ async function searchCommittee(searchItem) {
     });
 }
 module.exports = {
+    emptyCommittee,
     newCommittee,
     updateCommittee,
     deleteCommittee,
@@ -254,4 +261,5 @@ module.exports = {
     getCommitteeBySlug,
     getMemberRoleInCommittee,
     getCommitteeByName,
+    getAllCommitteesOfType,
 };

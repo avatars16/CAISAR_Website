@@ -1,0 +1,28 @@
+<% let notShow = ["userId","createdAt","userURL","lastLogin","profileViews","numberOfLogins","birthday", "email","password","websiteRole"]
+        for (let prop in user) {
+            if(!notShow.includes(String(prop))){ %>
+        <fieldset>
+            <label for= "<%= prop %> "> 
+                <%
+                var rowName = prop.replace(/([A-Z])/g, " $1");
+                var finalRowName = rowName.charAt(0).toLowerCase() + rowName.slice(1)
+                %>
+                <%= finalRowName%>
+            </label>
+            <input type="text" name= "<%= prop %>" id= "<%= prop %>" value= "<%=user[prop] %>">
+        </fieldset>
+<% } } %> 
+
+<fieldset>
+        <label for= "birthday" > Birthday </label>
+        <input type="date" name= "birthday" id= "birthday" value = "<%= user.birthday%>">
+</fieldset>
+
+<fieldset>
+        <label for= "email" > Email </label>
+        <input type="email" name= "email" id= "email" value = "<%- user.email%>">
+</fieldset>
+<fieldset>
+        <label for= "password" > Password</label>
+        <input type="password" name= "password" id= "password">
+</fieldset>

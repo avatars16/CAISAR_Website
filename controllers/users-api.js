@@ -1,6 +1,4 @@
 const bcrypt = require("bcrypt");
-const passport = require("passport");
-const db_generic = require("../database/db_generic");
 const {
     updateRow,
     addNewRow,
@@ -9,13 +7,27 @@ const {
     getAllRows,
     searchInColumns,
 } = require("../database/db_interaction");
-const helper = require("../models/helper-functions");
+const helper = require("./helper-functions");
 const slugify = require("slugify");
-const ApiError = require("../error/data-errors");
-const apiErrorHandler = require("../error/error-handler");
-const data = require("./data");
-const { search } = require("../routes");
+const ApiError = require("../utils/error/data-errors");
+const data = require("../permissions/data");
 
+function userObject() {
+    return {
+        firstName: "test",
+        middleName: undefined,
+        lastName: "test",
+        postalcode: "1234AB",
+        adress: "street",
+        houseNumber: 1,
+        suffix: undefined,
+        phone: "06-12345678",
+        birthday: undefined,
+        email: "test@test.com",
+        password: undefined,
+        websiteRole: undefined,
+    };
+}
 async function createUser(newUser) {
     const hashedPassword = await bcrypt.hash(newUser.password, 10);
     helper.deleteEmptyFields(newUser);
@@ -24,16 +36,19 @@ async function createUser(newUser) {
     let fullName = newUser.firstName + newUser.lastName;
     if (newUser.middleName)
         fullName = newUser.firstName + newUser.middleName + newUser.lastName;
-    newUser.userSlug = await createSlug(fullName);
+    newUser.userURL = await createURL(fullName);
     return newUser;
 }
 
 async function saveUser(newUser) {
+    //REMARK! data can be an error
     let data = await addNewRow("users", newUser);
     return data;
 }
 function updateUser(user, userId, oldEmail) {
     return new Promise(async (resolve, reject) => {
+        // [ ] TODO: Add that board members can not promote to admins
+        // [ ] TODO: Add that there has to be one admin minimum
         helper.deleteEmptyFields(user);
         if (user.password) user.password = await bcrypt.hash(user.password, 10);
         if (
@@ -58,13 +73,13 @@ function deleteUser(user) {
     });
 }
 
-async function createSlug(fullName) {
+async function createURL(fullName) {
     var slugName = slugify(fullName, { lower: true, strict: true });
-    let data = await getUser({ userSlug: slugName });
+    let data = await getUser({ userURL: slugName });
     if (data == null) return slugName;
     var i = 0;
     newSlugName = slugify(fullName + i, { lower: true, strict: true });
-    while (await getUser({ userSlug: newSlugName })) {
+    while ((await getUser({ userURL: newSlugName })) != null) {
         i++;
         newSlugName = slugify(fullName + i, { lower: true, strict: true });
     }
@@ -79,8 +94,8 @@ async function checkIfUserExists(inputEmail) {
     return true;
 }
 
-async function getUserBySlug(userSlug) {
-    return await getUser({ userSlug: userSlug });
+async function getUserByURL(userURL) {
+    return await getUser({ userURL: userURL });
 }
 
 async function getUserByMail(inputEmail) {
@@ -90,8 +105,7 @@ async function getUserByMail(inputEmail) {
 async function getAllUsers() {
     let data = await getAllRows("users", "*");
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data;
 }
@@ -100,15 +114,13 @@ async function getUser(jsonQueryObject) {
     //for example to get user by email: getUser({ email: userEmail})
     let data = await getSpecificRows("users", "*", jsonQueryObject);
     if (data instanceof ApiError) {
-        console.log(data);
-        return;
+        return data;
     }
     return data[0];
 }
 
 async function userLoginStatisticsUpdate(currentInlogCount, userId) {
     try {
-        console.log(new Date());
         await updateRow(
             "users",
             { numberOfLogins: currentInlogCount + 1, lastLogin: new Date() },
@@ -120,28 +132,29 @@ async function userLoginStatisticsUpdate(currentInlogCount, userId) {
     }
 }
 
-async function searchUser(searchItem) {
-    return new Promise(async (resolve, reject) => {
-        let data = await searchInColumns(
+async function updateProfileViews(currentProfileViews, userId) {
+    try {
+        await updateRow(
             "users",
-            "*",
-            searchItem + "% ",
-            "lastName"
+            { profileViews: currentProfileViews + 1 },
+            { userId: userId }
         );
-        if (data instanceof ApiError) return reject(data);
-        return resolve(data);
-    });
+        return true;
+    } catch (error) {
+        return error;
+    }
 }
 module.exports = {
+    userObject,
     createUser,
     saveUser,
     checkIfUserExists,
     getUser,
     getUserByMail,
-    getUserBySlug,
+    getUserByURL,
     updateUser,
     deleteUser,
     getAllUsers,
-    searchUser,
     userLoginStatisticsUpdate,
+    updateProfileViews,
 };

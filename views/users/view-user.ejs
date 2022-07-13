@@ -1,0 +1,75 @@
+<br>
+<h1>User overview</h1>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Value</th>
+    </tr>
+    <% 
+    let notShow = ["password","userId","createdAt", "websiteRole","numberOfLogins","lastLogin","profileViews"]
+    let privateDetails = ["email","phone","private","birthday"]
+    for (let prop in user) {
+        if(!notShow.includes(String(prop))){
+            if((!private && !privateDetails.includes(String(prop)))
+            || (hasEditPermission && privateDetails.includes(String(prop)))){
+        %>
+        <tr>
+            <td><%= prop %></td>
+            <td><%= user[prop] %></td>
+        </tr>
+    <% } } }%> 
+</table>
+<%if(hasEditPermission) { %>
+<a href="/users/<%= user.userURL %>/edit">edit user</a>
+<%}%>
+<br>
+<h1>Lichting</h1>
+<%if(batch[0] != null ){%>
+<a href="/committees/<%=batch[0].committeeURL%>/"><h2><%=batch[0].committeeName%></h2></a>
+<%}%>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>User url</th>
+        <th>Member since</th>
+    </tr>
+    <% 
+    for (let member of batch) {
+        %>
+        <tr>
+            <% if(user.middleName){%>
+                <td><%= user.firstName + ' '+  user.middleName +' '+  user.lastName %></td>
+            <%} else {%> 
+                <td><%= user.firstName + ' '+  user.lastName %></td>
+            <%}%>
+            <td><a href="/committees/<%= member.userURL%>/"><%=  member.userURL%></a></td>
+            <td><%= member.startDate.toLocaleDateString()%></td>   
+        </tr>
+    <% }%> 
+</table>
+<br>
+<h1>Committees</h1>
+<table>
+    <tr>
+        <th>Committee name</th>
+        <th>Committee url</th>
+        <th>Role</th>
+        <th>Member since</th>
+        <th>End Date</th>
+    </tr>
+    <% 
+    let notShowForMembers = ["committeeId","userId"]
+    for (let member of committees) {
+        %>
+        <tr>
+            <td><%= member.committeeName +'\t'%> </td>
+            <td><a href="/committees/<%= member.committeeURL%>/"><%=  member.committeeURL%></a></td>
+            <td><%= member.memberRole%></td>
+            <td><%= member.startDate.toDateString()%></td>
+            <%if(member.endDate){%>
+            <td><%= member.endDate.toDateString()%></td>
+        <%}%>    
+        </tr>
+    <% }%> 
+</table>
+<br>

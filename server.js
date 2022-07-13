@@ -1,7 +1,6 @@
 if (process.env.NODE_ENV !== "production") {
     require("dotenv").config();
 }
-
 const express = require("express");
 const app = express();
 const expressLayouts = require("express-ejs-layouts");
@@ -12,10 +11,12 @@ const methodOverride = require("method-override");
 const bodyParser = require("body-parser");
 
 const passport = require("passport");
-const apiErrorHandler = require("./error/error-handler");
+const apiErrorHandler = require("./utils/error/error-handler");
 
 const initiliazePassport = require("./passport-config");
 initiliazePassport(passport);
+
+const logger = require("./utils/logger");
 
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
@@ -39,15 +40,17 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const lsRouter = require("./routes/ls")(passport);
-const userRouter = require("./routes/users-route")(passport);
-const committeesRouter = require("./routes/committees-route")(passport);
+const userRouter = require("./routes/users-route");
+const committeesRouter = require("./routes/committees-route");
 const databaseRouter = require("./routes/database");
 const indexRouter = require("./routes/index");
+const newsRouter = require("./routes/news-route");
 
 app.use("/db", databaseRouter);
 app.use("/ls", lsRouter);
 app.use("/users", userRouter);
 app.use("/committees", committeesRouter);
+app.use("/news", newsRouter);
 app.use("/", indexRouter);
 
 app.use(apiErrorHandler);

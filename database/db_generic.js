@@ -2,7 +2,8 @@
 //const db = new sqlite3.Database('./Users.db',sqlite3.OPEN_READWRITE);
 
 const mysql = require("mysql");
-const ApiError = require("../error/data-errors");
+const ApiError = require("../utils/error/data-errors");
+const logger = require("../utils/logger");
 
 function getConn() {
     let db = mysql.createConnection({
@@ -20,15 +21,13 @@ function getConn() {
     return db;
 }
 
-function dbQuery(sql, placeholders) {
-    console.log("dbQuery sql: " + sql);
-    console.info(placeholders);
-
+function dbQuery(sql, parameters) {
+    logger.verbose("SQL query", { stmt: sql, parameters: parameters });
     return new Promise((resolve, reject) => {
         var db = getConn();
-        db.query(sql, placeholders, (err, result, fields) => {
+        db.query(sql, parameters, (err, result, fields) => {
             if (err) {
-                return reject(ApiError.internal("Invalid database query"));
+                return reject(ApiError.internal("Invalid database query", err));
             }
             return resolve(result);
         });
@@ -37,12 +36,12 @@ function dbQuery(sql, placeholders) {
 }
 
 function dbSimpleQuery(sql) {
-    console.log("dbSimpleQuery sql: " + sql);
+    logger.verbose("SQL query", { stmt: sql });
     return new Promise((resolve, reject) => {
         var db = getConn();
         db.query(sql, (err, result, fields) => {
             if (err) {
-                return reject(ApiError.internal("Invalid database query"));
+                return reject(ApiError.internal("Invalid database query", err));
             }
             return resolve(result);
         });

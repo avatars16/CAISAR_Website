@@ -1,0 +1,47 @@
+<br>
+<h1>All lichtingen</h1>
+<label for="search">Search:</label>
+<input type="search" name="search" id="search" onkeyup="sendData(this)">
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Value</th>
+    </tr>
+    <% 
+    for (batch of batches){
+        if(batch.memberRole == null){
+        %>
+        <tr>
+            <td><%= batch.committeeName%></td>
+            <td> <a href="/committees/<%= batch.committeeURL %>/"><%= batch.committeeURL %></a></td>
+        </tr>
+    <% }}%> 
+</table>
+<%if(hasEditPermission){%>
+    <a href="/committees/new/?committeeType=batch">Nieuwe lichting</a>    
+<%}%>
+
+<br>
+<h1>All committees</h1>
+<label for="search">Search:</label>
+<input type="search" name="search" id="search" onkeyup="sendData(this)">
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Value</th>
+    </tr>
+    <% 
+    for (committee of committees){
+        if(committee.memberRole == null){
+        %>
+        <tr>
+            <td><%= committee.committeeName%></td>
+            <td> <a href="/committees/<%= committee.committeeURL %>/"><%= committee.committeeURL %></a></td>
+        </tr>
+    <% }}%> 
+</table>
+<br>
+<%if(hasEditPermission){%>
+    <a href="/committees/new/?committeeType=committee">New committee</a>
+<%}%>
+<%#<script src="js/searchengine.js"></script>%>
