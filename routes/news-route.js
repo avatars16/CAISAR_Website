@@ -20,22 +20,23 @@ const {
 router.route("/").get(async (req, res) => {
     let newsPages = await getAllPages();
     if (newsPages instanceof ApiError) return next(newsPages);
+    let role;
+    if (req.isAuthenticated()) role = req.user.websiteRole;
     res.render("news/all-news-items", {
         newsPages: newsPages,
-        signedInUser: req.isAuthenticated(),
+        hasPermission: hasPermission(role, ROLE.BOARD),
     });
 });
 
-//TODO: add authentication check
 router
     .route("/new")
-    .get(authUser, async (req, res, next) => {
+    .get(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
         res.render("news/new-news-item", {
             newsPage: emptyPage(),
         });
         return;
     })
-    .post(authUser, async (req, res, next) => {
+    .post(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
         let newsPage = await req.body;
         await newPage(newsPage, req.user)
             .then((msg) => {
@@ -62,21 +63,31 @@ router
 
 router
     .route("/:newsPageURL/edit")
-    .get(checkIfNewspageExists, async (req, res) => {
-        res.render("news/edit-news-item", {
-            newsPage: req.newsPage,
-            deletePermission: true,
-        });
-    })
-    .put(checkIfNewspageExists, async (req, res, next) => {
-        await updatePage(req.body, req.params.newsPageURL)
-            .then((msg) => {
-                res.redirect(`/news/${req.params.newsPageURL}`);
-            })
-            .catch((err) => {
-                next(err);
+    .get(
+        authUser,
+        authRole(ROLE.BOARD),
+        checkIfNewspageExists,
+        async (req, res) => {
+            res.render("news/edit-news-item", {
+                newsPage: req.newsPage,
+                deletePermission: true,
             });
-    })
+        }
+    )
+    .put(
+        authUser,
+        authRole(ROLE.BOARD),
+        checkIfNewspageExists,
+        async (req, res, next) => {
+            await updatePage(req.body, req.params.newsPageURL)
+                .then((msg) => {
+                    res.redirect(`/news/${req.params.newsPageURL}`);
+                })
+                .catch((err) => {
+                    next(err);
+                });
+        }
+    )
     .delete(
         checkIfNewspageExists,
         authUser,

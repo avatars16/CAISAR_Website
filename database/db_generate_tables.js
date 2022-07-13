@@ -43,7 +43,7 @@ async function createCommitteesTable(req, res, next) {
 }
 
 async function createPagesTable(req, res, next) {
-    //TODO: Possible add multiple URL foreign keys (to users, committees, activities)
+    //[ ] TODO: Possible add multiple URL foreign keys (to users, committees, activities)
     let pageText =
         "pageTitle varchar(255) NOT NULL, pagePreviewMd text NOT NULL, pagePreviewHTML text NOT NULL, pageDescriptionMd text NOT NULL, pageDescriptionHTML text NOT NULL,";
     let pageOther = "pagePicture text NULL, pageNumber int NOT NULL DEFAULT 0,";

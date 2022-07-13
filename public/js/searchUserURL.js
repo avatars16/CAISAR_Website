@@ -1,4 +1,4 @@
-//TODO: Add a js object with firstName,MiddleName,lastName and userURL and use that to fill in the search bar, instead of userIds
+// [ ] TODO: Add a js object with firstName,MiddleName,lastName and userURL and use that to fill in the search bar, instead of userIds
 
 //Send data from text input to server
 //Server searches user, and send back the username,and userURL

@@ -1,6 +1,7 @@
 const logger = require("../logger");
 const ApiError = require("./data-errors");
 
+//  FIXME: The path shown to user is not correct, linking is correct tho
 function apiErrorHandler(err, req, res, next) {
     // in prod, don't use console.log or console.err because
     // it is not async

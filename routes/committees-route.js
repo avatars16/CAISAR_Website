@@ -36,7 +36,6 @@ router.route("/").get(async (req, res) => {
     });
 });
 
-//TODO: Change view so that sub committees are shown under their parent
 router
     .route("/new")
     .get(authUser, authRole(ROLE.BOARD), async (req, res, next) => {

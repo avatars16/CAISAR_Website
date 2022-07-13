@@ -27,7 +27,7 @@ function emptyPage() {
 async function newPage(page, user) {
     return new Promise(async (resolve, reject) => {
         let newPage = helper.deleteEmptyFields(page);
-        //TODO: add more field checks
+        //[ ] TODO: add more field checks
         if (!page.pageTitle)
             return reject(ApiError.badRequest("Title is required"));
         if (!page.pageDescriptionMd)

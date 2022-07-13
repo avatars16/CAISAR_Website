@@ -46,8 +46,8 @@ async function saveUser(newUser) {
 }
 function updateUser(user, userId, oldEmail) {
     return new Promise(async (resolve, reject) => {
-        //TODO: Add that board members can not promote to admins
-        //TODO: Add that there has to be one admin minimum
+        // [ ] TODO: Add that board members can not promote to admins
+        // [ ] TODO: Add that there has to be one admin minimum
         helper.deleteEmptyFields(user);
         if (user.password) user.password = await bcrypt.hash(user.password, 10);
         if (

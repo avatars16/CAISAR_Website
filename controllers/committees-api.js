@@ -13,7 +13,7 @@ const ApiError = require("../utils/error/data-errors");
 const data = require("../permissions/data");
 const { search } = require("../routes");
 
-//TODO: Clean up this code, its a mess.
+// [ ] TODO: Clean up this code, its a mess.
 
 function emptyCommittee() {
     return {
