@@ -50,7 +50,7 @@ async function createPagesTable(req, res, next) {
     let statistics =
         "createdBy INT NOT NULL, createdAt DATETIME NOT NULL DEFAULT CURRENT_DATE(), pageViews INT NOT NULL DEFAULT 0,";
     let sql =
-        "CREATE TABLE pages(pageId int AUTO_INCREMENT, pageURL VARCHAR NOT NULL," +
+        "CREATE TABLE pages(pageId int AUTO_INCREMENT, pageURL VARCHAR(255) NOT NULL," +
         pageText +
         pageOther +
         statistics +
