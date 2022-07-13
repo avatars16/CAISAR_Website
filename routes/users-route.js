@@ -6,129 +6,136 @@ const {
     authRole,
     hasPermission,
 } = require("../permissions/basicAuth");
-const { ROLE } = require("../models/data");
-const ApiError = require("../error/data-errors");
+const { ROLE, COMMITTEETYPE } = require("../permissions/data");
+const ApiError = require("../utils/error/data-errors");
 const {
-    getUserByMail,
     getUserBySlug,
     updateUser,
     deleteUser,
     getAllUsers,
-    searchUser,
-} = require("../models/users-api");
-const {
-    canViewSpecificUser,
-    hasRole,
-    canDeleteUser,
-} = require("../permissions/users-permissions");
+    updateProfileViews,
+    getUserByURL,
+} = require("../controllers/users-api");
 const { getDataFromMultipleTables } = require("../database/db_interaction");
-const { getCommitteeByName } = require("../models/committees-api");
+const { getCommitteeByName } = require("../controllers/committees-api");
+const { searchUserByName } = require("../controllers/search-api");
 
-module.exports = function (passport) {
-    router.route("/").get(authUser, async (req, res) => {
-        let allUsers = await getAllUsers();
-        res.render("users/allUsers", { users: allUsers });
-    });
+router.route("/").get(authUser, async (req, res) => {
+    let allUsers = await getAllUsers();
+    res.render("users/all-users", { users: allUsers });
+});
 
-    router.post("/search", authUser, async (req, res, next) => {
-        let payload = req.body.payload;
-        await searchUser(payload)
-            .then((result) => {
-                console.log(result);
-                res.json({ payload: result });
+router.post("/search", authUser, searchUserByName);
+
+router
+    .route("/:userURL/edit")
+    .get(authUser, checkIfUserPageExists, async (req, res, next) => {
+        if (
+            !(
+                req.user.userURL == req.params.userURL ||
+                hasPermission(req.user.websiteRole, ROLE.BOARD)
+            )
+        )
+            return next(
+                ApiError.forbidden("You don't have acces to this page")
+            );
+        res.render("users/edit-user", {
+            user: req.requestedUser,
+            canDelete: hasPermission(req.user.websiteRole, ROLE.BOARD),
+            changeWebsiteRole: true,
+        });
+    })
+    .put(authUser, checkIfUserPageExists, async (req, res, next) => {
+        if (
+            !(
+                req.user.userURL == req.params.userURL ||
+                hasPermission(req.user.websiteRole, ROLE.BOARD)
+            )
+        )
+            return next(
+                ApiError.forbidden("You don't have acces to this page")
+            );
+        updateUser(req.body, req.requestedUser.userId, req.requestedUser.email)
+            .then((msg) => {
+                res.redirect(`/users/${req.params.userURL}/`);
             })
             .catch((err) => {
                 next(err);
             });
-    });
-
-    router
-        .route("/:userSlug/edit")
-        .get(authUser, async (req, res, next) => {
-            if (canViewSpecificUser(req.user, req.params.userSlug)) {
-                let reqUser = await getUserBySlug(req.params.userSlug);
-                res.render("users/userEdit", {
-                    reqUser: reqUser,
-                    currentUser: req.user,
-                    hasPermission: hasPermission,
-                    role: ROLE,
-                });
-                return;
-            }
-            next(ApiError.forbidden("You don't have acces to this page"));
-        })
-        .put(authUser, async (req, res, next) => {
-            if (canViewSpecificUser(req.user, req.params.userSlug)) {
-                updateUser(req.body, req.user.userId, req.user.email)
-                    .then((msg) => {
-                        res.redirect(`/users/${req.params.userSlug}/`);
-                    })
-                    .catch((err) => {
-                        next(err);
-                    });
-                return;
-            }
-            next(ApiError.forbidden("You don't have acces to this page"));
-        })
-        .delete(authUser, authRole(ROLE.BOARD), async (req, res, next) => {
-            let deleteThisUser = await getUserBySlug(req.params.userSlug);
-            if (deleteThisUser.userId == req.user.userId)
+    })
+    .delete(
+        authUser,
+        authRole(ROLE.ADMIN),
+        checkIfUserPageExists,
+        async (req, res, next) => {
+            if (req.requestedUser.userId == req.user.userId)
                 return next(
                     ApiError.badRequest(
                         "It is not possible to delete your own account"
                     )
                 );
-            if (
-                deleteThisUser.websiteRole == ROLE.BOARD ||
-                deleteThisUser.websiteRole == ROLE.ADMIN
-            )
+            if (hasPermission(req.requestedUser.websiteRole, ROLE.BOARD))
                 return next(
                     ApiError.badRequest(
-                        `It is not possible to delete a ${deleteThisUser.websiteRole} account`
+                        `It is not possible to delete a ${req.requestedUser.websiteRole} account`
                     )
                 );
-            deleteUser(deleteThisUser)
+            deleteUser(req.requestedUser)
                 .then((msg) => {
                     res.redirect(`/users/`);
                 })
                 .catch((err) => next(err));
-        });
-
-    router.route("/:userSlug/").get(authUser, async (req, res, next) => {
-        try {
-            if (canViewSpecificUser(req.user, req.params.userSlug)) {
-                requestedUser = await getUserBySlug(req.params.userSlug);
-                let committees = await getDataFromMultipleTables(
-                    "users",
-                    "committees",
-                    "userId",
-                    "userId",
-                    { "users.userId": requestedUser.userId }
-                );
-                let list = [];
-                for (let committee of committees) {
-                    list.push(
-                        await getCommitteeByName(committee.committeeName)
-                    );
-                }
-                res.render("users/userProfile", {
-                    reqUser: requestedUser,
-                    currentUser: req.user,
-                    committees: list,
-                    checkAuth: canViewSpecificUser,
-                    role: ROLE,
-                });
-                return;
-            }
-            next(ApiError.forbidden("You do not have acces to this page"));
-        } catch (error) {
-            next(
-                ApiError.internal(
-                    `User with url: ${req.params.userSlug} does not exist`
-                )
-            );
         }
+    );
+
+router
+    .route("/:userURL/")
+    .get(authUser, checkIfUserPageExists, async (req, res, next) => {
+        let committees = await getDataFromMultipleTables(
+            "users",
+            "committees",
+            "userId",
+            "userId",
+            {
+                "users.userId": req.requestedUser.userId,
+                committeeType: COMMITTEETYPE.COMMITTEE,
+            }
+        );
+        let userBatch = await getDataFromMultipleTables(
+            "users",
+            "committees",
+            "userId",
+            "userId",
+            { committeeType: COMMITTEETYPE.BATCH }
+        );
+        let list = [];
+        for (let committee of committees) {
+            list.push(await getCommitteeByName(committee.committeeName));
+        }
+        updateProfileViews(
+            req.requestedUser.profileViews,
+            req.requestedUser.userId
+        );
+        res.render("users/view-user", {
+            user: req.requestedUser,
+            committees: list,
+            batch: userBatch,
+            private: req.user.private,
+            hasEditPermission:
+                req.user.userURL == req.params.userURL ||
+                hasPermission(req.user.websiteRole, ROLE.BOARD),
+        });
     });
 
-    return router;
-};
+async function checkIfUserPageExists(req, res, next) {
+    req.requestedUser = await getUserByURL(req.params.userURL);
+    if (req.requestedUser == null)
+        return next(
+            ApiError.internal(
+                `User with url: ${req.params.userURL} does not exist`
+            )
+        );
+    return next();
+}
+
+module.exports = router;

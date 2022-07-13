@@ -1,0 +1,12 @@
+<br>
+<h1>Edit committee: <%- committee.committeeName%></h1>
+<form action="/committees/<%=committee.committeeURL %>/edit?_method=PUT" method="post">
+    <%- include("./_committeeForm.ejs")%>
+    <button type="submit">Edit committee</button>
+</form>
+<% if(deletePermission) {%>
+<form action="/committees/<%=committee.committeeURL %>/edit?_method=DELETE" method="post">
+    <button type="submit">Delete</button>
+    </form>
+<%}%>
+<br>

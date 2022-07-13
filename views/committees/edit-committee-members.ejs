@@ -1,12 +1,13 @@
+
 <br>
 <h1>Edit members: <%- committee.committeeName%></h1>
-<%  let notShowForMembers = ["committeeId","userId","committeeSlug", "startDate","endDate"]
+<%  let notShowForMembers = ["committeeId","userId","committeeURL", "startDate","endDate"]
 for (let member of committeeMembers) {
         if(member.userId){
         %>
-<form action="/committees/<%=committee.committeeSlug %>/members/edit?_method=PUT" method="post">
+<form action="/committees/<%=committee.committeeURL %>/members/edit?_method=PUT" method="post">
                 <%=member.firstName%>
-                 <a href= "/users/<%=member.userSlug%>/"><%=member.userSlug%></a>
+                 <a href= "/users/<%=member.userURL%>/"><%=member.userURL%></a>
                 <br>
                 <fieldset>
                     <label for= "memberRole" > Member role </label>
@@ -22,18 +23,19 @@ for (let member of committeeMembers) {
                 </fieldset>
     <button type="submit">Change</button>
 </form>
-<% if(checkAuth(user.websiteRole, role.ADMIN)) {%>
-<form action="/committees/<%=committee.committeeSlug %>/members/edit?_method=DELETE" method="post">
+<% if(deletePermission) {%>
+<form action= "/committees/<%=committee.committeeURL%>/members/edit?user=<%=member.userId%>&_method=DELETE" method="post">
     <button type="submit">Delete</button>
 </form>
 <%}%>
 <% } } %> 
 
-<%#Search option would be nice#%>
-<form action="/committees/<%=committee.committeeSlug %>/members/edit" method="post">
-    <label for="userSlug">Userslug</label>
-    <input type="userSlug" name="userSlug" id="userSlug">
+<form action="/committees/<%=committee.committeeURL %>/members/edit" method="post">
+    <label for="userURL">userURL</label>
+    <input type="userURL" name="userURL" id="userURL" onkeyup="sendData(this)">
     <button type="submit">Add user to this committee</button>    
 </form>
-
+<section id="searchResults"></section>
+<ul id="ulSearchResults" onclick="getUserInLi(event)"></ul>
+<script type="text/javascript" src="/js/searchuserURL.js"></script>
 <br>

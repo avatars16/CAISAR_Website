@@ -1,0 +1,19 @@
+<% let notShow = ["pageId","createdBy","pageURL", "pagePreviewHTML","pageDescriptionHTML","pageViews"]
+for (let prop in newsPage) {
+    if(!notShow.includes(String(prop))){ %>
+<fieldset>
+    <label for="<%= prop %>"> 
+        <%
+        var rowName = prop.replace(/([A-Z])/g, " $1");
+        var finalRowName = rowName.charAt(0).toLowerCase() + rowName.slice(1)
+        %>
+        <%= finalRowName%>
+    </label>
+    <%if (prop == "pageDescriptionMd" || prop == "pagePreviewMd"){%>
+        <textarea name= "<%= prop %>" id=" <%= prop %>">  <%=newsPage[prop] %> </textarea>
+    <%}else{%>
+        <input type="text" name= "<%= prop %>" id=" <%= prop %>" value= "<%=newsPage[prop] %>">
+    <%}%>
+    
+</fieldset>
+<% } } %> 

@@ -1,6 +1,8 @@
-const ApiError = require("../error/data-errors");
-const data = require("../models/data");
+const ApiError = require("../utils/error/data-errors");
+const data = require("../permissions/data");
+const { search } = require("../routes");
 const db_generic = require("./db_generic");
+const logger = require("../utils/logger");
 
 async function addNewRow(table, setValues) {
     let sql = `INSERT INTO ${table} SET ?`;
@@ -13,6 +15,8 @@ async function updateRow(table, setValues, filter) {
     prepareStmt = getPrepareStmt(filter);
     let sql = `UPDATE ${table} SET ? WHERE ${prepareStmt[0]}`;
     return db_generic.dbQuery(sql, [setValues, prepareStmt[1]]).catch((err) => {
+        logger.error("test");
+        logger.error(err);
         return err;
     });
 }
@@ -41,7 +45,7 @@ async function getAllRows(table, selectValues) {
             return result;
         })
         .catch((err) => {
-            return ApiError.internal("could not handle this query");
+            return ApiError.internal("could not handle this query", err);
         });
 }
 
@@ -54,7 +58,7 @@ async function getSpecificRows(table, selectValues, filter) {
             return result;
         })
         .catch((err) => {
-            return ApiError.internal("could not handle this query");
+            return ApiError.internal("could not handle this query", err);
         });
 }
 
@@ -76,33 +80,47 @@ async function getDataFromMultipleTables(
     columnid2,
     filter
 ) {
+    let whereStmt = getPrepareStmt(filter);
     let sql = `SELECT * 
     FROM ${table1}
     INNER JOIN ${table2}
     ON ${table1}.${columnid1} = ${table2}.${columnid2}
-    WHERE ?`;
+    WHERE ${whereStmt[0]}`;
     return await db_generic
-        .dbQuery(sql, filter)
+        .dbQuery(sql, whereStmt[1])
         .then((result) => {
             return result;
         })
         .catch((err) => {
-            return ApiError.internal("could not handle this query");
+            return ApiError.internal(
+                "could not handle this query",
+                (error = err)
+            );
         });
 }
 
-//This function does not work,
-//It allways returns an empty database.
-async function searchInColumns(table, selectValues, searchItem, searchColumns) {
-    let sql = `SELECT ${selectValues} FROM ${table} WHERE ? LIKE ?  `;
+async function searchInColumns(table, selectValues, filter, n = 10) {
+    let prepareStm = prepareWhereLikeStmt(filter);
+    let sql = `SELECT DISTINCT ${selectValues} FROM ${table} WHERE (${prepareStm[0]}) LIMIT ${n} `;
     return await db_generic
-        .dbQuery(sql, [searchColumns, searchItem])
+        .dbQuery(sql, prepareStm[1])
         .then((result) => {
             return result;
         })
         .catch((err) => {
-            return ApiError.internal("could not handle this query");
+            return err;
         });
+}
+
+function prepareWhereLikeStmt(filter) {
+    values = [];
+    sql = "";
+    for (let column in filter) {
+        values.push(filter[column]);
+        sql += ` ${column} LIKE ? OR`;
+    }
+    sql = sql.slice(0, sql.length - 3);
+    return [sql, values];
 }
 
 module.exports = {

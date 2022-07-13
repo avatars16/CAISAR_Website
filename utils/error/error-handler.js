@@ -1,11 +1,13 @@
+const logger = require("../logger");
 const ApiError = require("./data-errors");
 
+//  FIXME: The path shown to user is not correct, linking is correct tho
 function apiErrorHandler(err, req, res, next) {
     // in prod, don't use console.log or console.err because
     // it is not async
-    console.log(req.originalUrl);
-    console.log(req.header("Referer"));
-    console.error(err);
+    err.referer = req.header("Referer");
+    err.reqUrl = req.originalUrl;
+    logger.error(err);
 
     var goToUrl = req.header("Referer");
     var path = goToUrl;
@@ -14,7 +16,7 @@ function apiErrorHandler(err, req, res, next) {
         res.status(err.code);
         if (err.url) {
             goToUrl = err.url;
-            path = req.hostname + err.url;
+            path = req.hostname;
         }
         if (err.redirect) {
             return res.redirect(goToUrl);

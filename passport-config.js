@@ -1,11 +1,13 @@
 const LocalStrategy = require("passport-local").Strategy;
-const userApi = require("./models/users-api");
+const userApi = require("./controllers/users-api");
 const bcrypt = require("bcrypt");
+const { deleteEmptyFields } = require("./controllers/helper-functions");
+const logger = require("./utils/logger");
+const ApiError = require("./utils/error/data-errors");
 
 function initiliaze(passport) {
     const loginUser = async (userEmail, password, done) => {
         if (!(await userApi.checkIfUserExists(userEmail))) {
-            // return done(err, user, {message: "No user with that email"})
             return done(null, false, { message: "No user with that email" });
         }
         const user = await userApi.getUser({ email: userEmail });
@@ -29,12 +31,14 @@ function initiliaze(passport) {
 
     const registerUser = async (req, userEmail, password, done) => {
         if (
-            !(
-                req.body.firstName &&
-                req.body.lastName &&
-                req.body.email &&
-                password
-            )
+            req.body.firstName == null &&
+            req.body.lastName == null &&
+            req.body.postalcode == null &&
+            req.body.adress == null &&
+            req.body.houseNumber == null &&
+            req.body.phone == null &&
+            req.body.email == null &&
+            password == null
         )
             return done(null, false, { message: "Fill in required fields" });
         let newUser = await userApi.createUser(req.body);
@@ -42,8 +46,13 @@ function initiliaze(passport) {
             return done(null, false, { message: "user already exists" });
         }
         if (await userApi.saveUser(newUser)) {
-            var reqNewUser = await userApi.getUserByMail(userEmail);
-            return done(null, reqNewUser);
+            var data = await userApi.getUserByMail(userEmail);
+            if (data instanceof ApiError) {
+                return done(null, false, {
+                    message: "user could not be added to the database",
+                });
+            }
+            return done(null, data);
         }
         return done(null, false, {
             message: "user could not be added to database",

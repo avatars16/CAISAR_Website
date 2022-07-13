@@ -1,0 +1,21 @@
+<% let notShow = ["committeeId","userId","committeeURL", "memberRole"]
+    for (let prop in committee) {
+        if(!notShow.includes(String(prop))){ %>
+    <fieldset>
+        <label for= "<%= prop %>"> 
+            <%
+            var rowName = prop.replace(/([A-Z])/g, " $1");
+            var finalRowName = rowName.charAt(0).toLowerCase() + rowName.slice(1)
+            %>
+            <%= finalRowName%>
+        </label>
+        <%if(prop == "startDate" || prop == "endDate"){
+            let dateValue = committee[prop]
+            if(dateValue != null) {dateValue = dateValue.toISOString().split("T")[0]} 
+            %>
+            <input type="date" name= "<%= prop %>" id="<%= prop %>" value= "<%=dateValue%>">
+        <%}else{%>
+            <input type="text" name= "<%= prop %>" id=" <%= prop %>" value= "<%=committee[prop] %>">
+        <%}%>
+    </fieldset>
+<% } } %> 

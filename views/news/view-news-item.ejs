@@ -1,0 +1,8 @@
+<br />
+<h1><%= newsPage.pageTitle%></h1>
+<%- newsPage.pageDescriptionHTML%>
+<% if(hasPermission){%> 
+    <a href="/news/<%= newsPage.pageURL%>/edit">edit calendar Item</a>    
+<% } %>
+
+<br />
