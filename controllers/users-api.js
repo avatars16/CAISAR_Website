@@ -25,6 +25,7 @@ function userObject() {
         birthday: undefined,
         email: "test@test.com",
         password: undefined,
+        websiteRole: undefined,
     };
 }
 async function createUser(newUser) {

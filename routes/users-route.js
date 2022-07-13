@@ -14,6 +14,7 @@ const {
     deleteUser,
     getAllUsers,
     updateProfileViews,
+    getUserByURL,
 } = require("../controllers/users-api");
 const { getDataFromMultipleTables } = require("../database/db_interaction");
 const { getCommitteeByName } = require("../controllers/committees-api");
@@ -127,7 +128,7 @@ router
     });
 
 async function checkIfUserPageExists(req, res, next) {
-    req.requestedUser = await getUserBySlug(req.params.userURL);
+    req.requestedUser = await getUserByURL(req.params.userURL);
     if (req.requestedUser == null)
         return next(
             ApiError.internal(
