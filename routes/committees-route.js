@@ -8,7 +8,7 @@ const {
 } = require("../permissions/basicAuth");
 const { ROLE, COMMITTEEROLE, COMMITTEETYPE } = require("../permissions/data");
 const ApiError = require("../utils/error/data-errors");
-const { getUserBySlug } = require("../controllers/users-api");
+const { getUserBySlug, getUserByURL } = require("../controllers/users-api");
 const {
     getAllCommittees,
     getCommitteeBySlug,
@@ -154,7 +154,7 @@ router
         authRole(ROLE.BOARD),
         checkIfCommitteePageExists,
         async (req, res, next) => {
-            let user = await getUserBySlug(req.body.userURL);
+            let user = await getUserByURL(req.body.userURL);
             if (user == [])
                 return next(
                     ApiError.badRequest(
